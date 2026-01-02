@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Msi.TemplateCodeGenerator.UI.ProjectExplorer;
 using Msi.TemplateCodeGenerator.UI.Settings;
 using Msi.TemplateCodeGenerator.UI.TemplateEditor;
 
@@ -9,17 +10,21 @@ namespace Msi.TemplateCodeGenerator.UI;
 // Esto le da la capacidad de recibir mensajes (Messenger) de otros ViewModels hijos
 // para coordinar la navegación o acciones globales.
 internal partial class MainShellViewModel(TemplateEditorShellViewModel templateEditorShellViewModel,
-                                          SettingsShellViewModel settingsShellViewModel)
-    : ObservableRecipient
+                                          SettingsShellViewModel settingsShellViewModel,
+                                          ProjectExplorerShellViewModel projectExplorerShellViewModel)
+    : BaseViewModel
 {
     [ObservableProperty]
     private object? _currentViewModel = templateEditorShellViewModel;
 
-    protected override void OnActivated()
-    {
-        // Aquí nos suscribiríamos a mensajes globales si los hubiera.
-        // Messenger.Register<MainShellViewModel, NavigationMessage>(this, (r, m) => r.Receive(m));
-    }
+    [ObservableProperty]
+    private object? _currentExplorerViewModel = projectExplorerShellViewModel;
+
+    //protected override void OnActivated()
+    //{
+    //    // Aquí nos suscribiríamos a mensajes globales si los hubiera.
+    //    // Messenger.Register<MainShellViewModel, NavigationMessage>(this, (r, m) => r.Receive(m));
+    //}
 
     [RelayCommand]
     private void NavigateToTemplateEditor()
@@ -34,8 +39,8 @@ internal partial class MainShellViewModel(TemplateEditorShellViewModel templateE
     }
 
     [RelayCommand]
-    private void Exit()
+    private static void Exit()
     {
-        System.Windows.Application.Current.Shutdown();
+        
     }
 }

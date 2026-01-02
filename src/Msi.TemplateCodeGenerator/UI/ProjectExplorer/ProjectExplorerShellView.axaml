@@ -1,17 +1,16 @@
-<UserControl x:Class="Msi.TemplateCodeGenerator.UI.TemplateEditor.TemplateEditorShellView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<UserControl x:Class="Msi.TemplateCodeGenerator.UI.ProjectExplorer.ProjectExplorerShellView"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:Msi.TemplateCodeGenerator.UI.TemplateEditor"
+             xmlns:local="clr-namespace:Msi.TemplateCodeGenerator.UI.Settings"
              mc:Ignorable="d" 
              x:ClassModifier="internal"
-             d:DataContext="{d:DesignInstance Type=local:TemplateEditorShellViewModel, IsDesignTimeCreatable=False}"
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
         <StackPanel HorizontalAlignment="Center"
                     VerticalAlignment="Center">
-            <TextBlock Text="Hello World! From: Template Editor View Shell" 
+            <TextBlock Text="Hello World! From: Project Explorer View Shell" 
                        HorizontalAlignment="Center" 
                        VerticalAlignment="Center" 
                        FontSize="24"/>

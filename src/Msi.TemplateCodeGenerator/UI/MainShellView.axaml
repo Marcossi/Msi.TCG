@@ -1,0 +1,30 @@
+<UserControl x:Class="Msi.TemplateCodeGenerator.UI.MainShellView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Msi.TemplateCodeGenerator.UI"
+             xmlns:editor="clr-namespace:Msi.TemplateCodeGenerator.UI.TemplateEditor"
+             xmlns:settings="clr-namespace:Msi.TemplateCodeGenerator.UI.Settings"
+             mc:Ignorable="d" 
+             x:ClassModifier="internal"
+             d:DesignHeight="450" d:DesignWidth="800">
+             <!--d:DataContext="{d:DesignInstance Type=local:MainShellViewModel, IsDesignTimeCreatable=False}"-->
+
+    <DockPanel Background="LightCoral">
+        <!-- Barra de menus -->
+        <Menu DockPanel.Dock="Top" Background="LightPink">
+            <MenuItem Header="_Archivo">
+                <MenuItem Header="_Salir" Command="{Binding ExitCommand}"/>
+            </MenuItem>
+            <MenuItem Header="_Navegación">
+                <MenuItem Header="Editor de Plantillas" Command="{Binding NavigateToTemplateEditorCommand}" />
+                <MenuItem Header="Configuración" Command="{Binding NavigateToSettingsCommand}"/>
+            </MenuItem>
+        </Menu>
+
+        <!-- Area de contenido principal -->
+        <ContentControl DockPanel.Dock="Left" Margin="5" Background="LightBlue" Content="{Binding CurrentExplorerViewModel}" MinWidth="100" />
+        <ContentControl Margin="5" Background="LightGoldenrodYellow" Content="{Binding CurrentViewModel}" />
+    </DockPanel>
+</UserControl>
