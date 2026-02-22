@@ -22,5 +22,7 @@
     <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.3.10" />
     <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.3.10" />
     <PackageVersion Include="Avalonia.Diagnostics" Version="11.3.10" />
+	<!-- Otros -->
+	<PackageVersion Include="Scriban" Version="6.5.3" />
   </ItemGroup>
 </Project>

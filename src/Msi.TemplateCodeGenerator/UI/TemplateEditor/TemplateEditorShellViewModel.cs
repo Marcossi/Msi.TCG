@@ -9,7 +9,43 @@ internal partial class TemplateEditorShellViewModel(ITemplatesService templatesS
     private string _statusMessage = "Hello World! From: Template Editor ShellViewModel!";
 
     [ObservableProperty]
-    private string _templateContent = string.Empty;
+    private string _templateContent = """
+        # Ejemplo de Plantilla Scriban
+        
+        Esta es una prueba de renderizado en tiempo real.
+        
+        ## Datos del Proyecto:
+        Proyecto: {{ Model.ProjectName }}
+        Autor: {{ Model.Author }}
+        Total de Elementos: {{ Model.Elements.size }}
+        Test: {{ Model.Test(Model) }}
+        
+        ## Elementos:
+        {{~ for element in Model.Elements ~}}
+        - Elemento: {{ element.Name }} (ID: {{ element.Id }})
+          Descripción: {{ element.Description }}
+          {{~ if element.BaseClass != null && element.BaseClass != "" ~}}
+          Hereda de: {{ element.BaseClass }}
+          {{~ else ~}}
+          No tiene clase base.
+          {{~ end ~}}
+          Campos ({{ element.Fields.size }}):
+          {{~ for field in element.Fields ~}}
+            * {{ field.Accessibility }} {{ field.Type }} {{ field.Name }}
+          {{~ end ~}}
+        {{~ end ~}}
+        
+        ## Bucle del 1 al 5:
+        {{~ for i in 1..5 ~}}
+        - Elemento número: {{ i }}
+        {{~ end ~}}
+        
+        ## Operaciones matemáticas:
+        2 + 2 = {{ 2 + 2 }}
+        
+        ## Funciones integradas:
+        Texto en mayúsculas: {{ "hola mundo" | string.upcase }}
+        """;
 
     [ObservableProperty]
     private string _previewContent = string.Empty;
@@ -49,16 +85,16 @@ internal partial class TemplateEditorShellViewModel(ITemplatesService templatesS
                 return;
 
             // Actualizar la propiedad solo si la tarea sigue siendo válida
-                if (result.IsSuccess)
-                {
-                    PreviewContent = result.Result;
-                    StatusMessage = "Preview actualizado correctamente.";
-                }
-                else
-                {
-                    PreviewContent = string.Empty; // O mantener el anterior?
-                    StatusMessage = $"Error: {result.ErrorMessage}";
-                }
+            if (result.IsSuccess)
+            {
+                PreviewContent = result.Result;
+                StatusMessage = "Preview actualizado correctamente.";
+            }
+            else
+            {
+                PreviewContent = $"Error: {result.ErrorMessage}";
+                StatusMessage = $"Error: {result.ErrorMessage}";
+            }
         }
         catch (TaskCanceledException)
         {

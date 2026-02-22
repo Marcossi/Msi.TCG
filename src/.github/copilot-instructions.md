@@ -13,7 +13,7 @@ Para comenzar a usar **Msi.TemplateCodeGenerator**, sigue estos pasos:
    - Agrega referencias a las DLLs que contienen tus modelos de datos.
 3. **Añade Plantillas**:
    - Crea un nuevo archivo de plantilla Scriban desde el editor.
-   - Define el contenido de tu plantilla usando la sintaxis de Scriban.
+   - Define el contenido de tu plantilla usando la sintaxis de Scriban. **Recuerda usar paréntesis `()` alrededor de los argumentos de los métodos para mayor claridad, ya que los usuarios son desarrolladores de C# acostumbrados a esta sintaxis.**
 4. **Verifica la Salida**: A medida que edits tu plantilla, observa el panel de preview para ver cómo cambia el código generado.
 5. **Guarda y Comparte**: Una vez que estés satisfecho con tus plantillas y el código generado, guarda tu proyecto. Puedes compartir la carpeta del proyecto con tu equipo para que ellos también puedan generar el código.
 
@@ -26,3 +26,11 @@ Para comenzar a usar **Msi.TemplateCodeGenerator**, sigue estos pasos:
 -   **Nomenclatura e Idioma**: 
     -   **Código**: El código (nombres de variables, clases, métodos, etc.) debe estar en **inglés**, siguiendo las convenciones estándar de C# y .NET.
     -   **Comentarios**: Los **comentarios** y la **documentación XML** deben escribirse en **español (Castellano)** para facilitar la comprensión y el mantenimiento del equipo.
+-   **Métodos en Scriban**: Solo se pueden registrar métodos estáticos en Scriban; no se deben exponer métodos públicos de instancia.
+
+## Dependencias Clave
+
+-   **WPF**: El proyecto se basa en el SDK de .NET con la propiedad `<UseWPF>true</UseWPF>`.
+-   **Scriban**: Motor de plantillas para la generación de código. Soporta funciones personalizadas y modelos de objetos complejos.
+    -   **Documentación Oficial**: [https://scriban.github.io/docs/](https://scriban.github.io/docs/) (Consultar esta URL para sintaxis, funciones integradas y API de C#).
+-   **CommunityToolkit.Mvvm**: Biblioteca oficial de Microsoft para implementar el patrón MVVM con source generators. Proporciona atributos como `[ObservableProperty]` y `[RelayCommand]` que generan automáticamente el código boilerplate necesario.
