@@ -1,0 +1,100 @@
+using System.Text.Json;
+using Msi.TemplateCodeGenerator.Constants;
+using Msi.TemplateCodeGenerator.Interfaces;
+using ProjectModel = Msi.TemplateCodeGenerator.Models.Project;
+
+namespace Msi.TemplateCodeGenerator.Services.Project;
+
+/// <summary>
+/// Serializador de proyectos en formato JSON (JSONC con soporte para comentarios en lectura).
+/// NOTA: Los comentarios se leen pero NO se preservan al guardar.
+/// TODO: Evaluar migración a JSON5 si se requiere preservar comentarios.
+/// </summary>
+internal sealed class JsonProjectSerializer : IProjectSerializer
+{
+    private static readonly JsonSerializerOptions _options = new()
+    {
+        WriteIndented = true,
+        ReadCommentHandling = JsonCommentHandling.Skip, // Permite leer comentarios (JSONC)
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
+    /// <summary>
+    /// DTO interno que envuelve el proyecto con metadata de persistencia.
+    /// </summary>
+    private sealed class ProjectFileDto
+    {
+        public int FileFormatVersion { get; set; } = ProjectConstants.CurrentFileFormatVersion;
+        public ProjectModel Project { get; set; } = null!;
+    }
+
+    /// <summary>
+    /// Guarda un proyecto en formato JSON.
+    /// </summary>
+    public async Task SaveAsync(ProjectModel project, string filePath)
+    {
+        if (project == null)
+            throw new ArgumentNullException(nameof(project));
+
+        if (string.IsNullOrWhiteSpace(filePath))
+            throw new ArgumentException("File path cannot be empty.", nameof(filePath));
+
+        // Crear el DTO con versión
+        var dto = new ProjectFileDto
+        {
+            FileFormatVersion = ProjectConstants.CurrentFileFormatVersion,
+            Project = project
+        };
+
+        // Serializar a JSON
+        var json = JsonSerializer.Serialize(dto, _options);
+
+        // Escribir a disco
+        await File.WriteAllTextAsync(filePath, json);
+    }
+
+    /// <summary>
+    /// Carga un proyecto desde un archivo JSON.
+    /// </summary>
+    public async Task<ProjectModel> LoadAsync(string filePath)
+    {
+        if (string.IsNullOrWhiteSpace(filePath))
+            throw new ArgumentException("File path cannot be empty.", nameof(filePath));
+
+        if (!File.Exists(filePath))
+            throw new FileNotFoundException("Project file not found.", filePath);
+
+        // Leer archivo JSON
+        var json = await File.ReadAllTextAsync(filePath);
+
+        // Deserializar DTO
+        var dto = JsonSerializer.Deserialize<ProjectFileDto>(json, _options);
+        if (dto == null)
+            throw new InvalidOperationException("Failed to deserialize project file.");
+
+        // Validar versión del formato
+        if (dto.FileFormatVersion > ProjectConstants.CurrentFileFormatVersion)
+        {
+            throw new NotSupportedException(
+                $"Project file format version {dto.FileFormatVersion} is not supported. " +
+                $"Current version: {ProjectConstants.CurrentFileFormatVersion}. " +
+                "Please update the application to open this file.");
+        }
+
+        if (dto.FileFormatVersion < ProjectConstants.MinimumSupportedFileFormatVersion)
+        {
+            throw new NotSupportedException(
+                $"Project file format version {dto.FileFormatVersion} is too old and requires migration. " +
+                $"Minimum supported version: {ProjectConstants.MinimumSupportedFileFormatVersion}.");
+        }
+
+        // TODO: Si en el futuro hay versiones intermedias, aplicar migraciones aquí
+        // if (dto.FileFormatVersion == 1)
+        //     dto.Project = MigrateFromVersion1ToVersion2(dto.Project);
+
+        if (dto.Project == null)
+            throw new InvalidOperationException("Project data is missing in the file.");
+
+        return dto.Project;
+    }
+}

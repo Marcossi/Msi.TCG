@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.Extensions.DependencyInjection;
 using Msi.TemplateCodeGenerator.Interfaces;
+using Msi.TemplateCodeGenerator.Services.Project;
 using Msi.TemplateCodeGenerator.Services.Templates;
 using Msi.TemplateCodeGenerator.UI;
 using Msi.TemplateCodeGenerator.UI.ProjectExplorer;
@@ -27,7 +29,15 @@ public static class DependencyInjection
         services.AddSingleton<SettingsShellViewModel>();
         services.AddSingleton<ProjectExplorerShellViewModel>();
 
-        // Registrar servicios
+        // Registrar sistema de mensajería
+        services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
+
+        // Registrar servicios de proyecto
+        services.AddSingleton<IProjectContext, ProjectContext>();
+        services.AddSingleton<IProjectSerializer, JsonProjectSerializer>();
+        services.AddSingleton<IProjectService, ProjectService>();
+
+        // Registrar otros servicios
         services.AddSingleton<ITemplatesService, TemplatesService>();
 
         return services;

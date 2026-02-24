@@ -15,6 +15,13 @@
         <!-- Barra de menus -->
         <Menu DockPanel.Dock="Top" Background="LightPink">
             <MenuItem Header="_Archivo">
+                <MenuItem Header="_Nuevo Proyecto..." Command="{Binding NewProjectCommand}"/>
+                <MenuItem Header="_Abrir Proyecto..." Command="{Binding OpenProjectCommand}"/>
+                <MenuItem Header="_Cerrar Proyecto" Command="{Binding CloseProjectCommand}"/>
+                <Separator />
+                <MenuItem Header="_Guardar" Command="{Binding SaveProjectCommand}"/>
+                <MenuItem Header="Guardar _Como..." Command="{Binding SaveProjectAsCommand}"/>
+                <Separator />
                 <MenuItem Header="_Salir" Command="{Binding ExitCommand}"/>
             </MenuItem>
             <MenuItem Header="_Navegación">
