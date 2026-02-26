@@ -40,6 +40,9 @@ public static class DependencyInjection
         // Registrar otros servicios
         services.AddSingleton<ITemplatesService, TemplatesService>();
 
+        // Registrar factory del dock (recibe los VMs del IoC)
+        services.AddSingleton<AppDockFactory>();
+
         return services;
     }
 }

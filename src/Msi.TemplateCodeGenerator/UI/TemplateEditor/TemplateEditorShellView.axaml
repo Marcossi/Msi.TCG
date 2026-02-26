@@ -6,10 +6,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Msi.TemplateCodeGenerator.UI.TemplateEditor"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800"
-             Background="LightSeaGreen">
-    
-    <Grid ColumnDefinitions="*, 4, *" Background="LightSalmon">
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <Grid ColumnDefinitions="*, 4, *">
         <!-- Editor (Izquierda) -->
         <TextBox Grid.Column="0"
                     Text="{Binding TemplateContent}"
@@ -20,8 +19,7 @@
                     Watermark="Escribe tu plantilla Scriban aquí..."
                     BorderThickness="1"
                     BorderBrush="#CCCCCC"
-                    CornerRadius="0"
-                    Background="LightYellow"/>			
+                    CornerRadius="0"/>			
 
         <!-- Splitter -->
         <GridSplitter Grid.Column="1" 

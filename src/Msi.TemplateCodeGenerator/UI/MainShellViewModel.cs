@@ -1,37 +1,45 @@
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Dock.Model.Controls;
 using Msi.TemplateCodeGenerator.Constants;
 using Msi.TemplateCodeGenerator.Interfaces;
 using Msi.TemplateCodeGenerator.UI.ProjectExplorer;
-using Msi.TemplateCodeGenerator.UI.Settings;
-using Msi.TemplateCodeGenerator.UI.TemplateEditor;
 
 namespace Msi.TemplateCodeGenerator.UI;
 
 /// <summary>
-/// ViewModel principal que coordina la navegaci�n y comandos globales de la aplicaci�n.
-/// Gestiona operaciones de proyecto (abrir/cerrar) delegando en IProjectService.
+/// ViewModel principal que coordina el shell y los comandos globales de la aplicación.
+/// El layout (paneles, pestañas) es gestionado por AppDockFactory y DockControl.
+/// Las operaciones de proyecto se delegan en IProjectService.
 /// </summary>
-internal partial class MainShellViewModel(TemplateEditorShellViewModel templateEditorShellViewModel,
-                                          SettingsShellViewModel settingsShellViewModel,
-                                          ProjectExplorerShellViewModel projectExplorerShellViewModel,
-                                          IProjectService projectService)
+
+internal partial class MainShellViewModel(
+    AppDockFactory dockFactory,
+    IProjectService projectService,
+    ProjectExplorerShellViewModel projectExplorerShellViewModel)
     : BaseViewModel
 {
-    [ObservableProperty]
-    private object? _currentViewModel = templateEditorShellViewModel;
-
-    [ObservableProperty]
-    private object? _currentExplorerViewModel = projectExplorerShellViewModel;
-
     private readonly IProjectService _projectService = projectService;
 
-    //protected override void OnActivated()
-    //{
-    //    // Aqu� nos suscribir�amos a mensajes globales si los hubiera.
-    //    // Messenger.Register<MainShellViewModel, NavigationMessage>(this, (r, m) => r.Receive(m));
-    //}
+    ///      XAML ViewModel
+    ///────────────────────────────────────────────────
+    /// DockControl  ←──binding──  Layout(IRootDock)
+    /// (lo que ves)                (lo que manipulas)
+
+    [ObservableProperty]
+    private IRootDock? _layout = CreateAndInitLayout(dockFactory);
+
+    /// <summary>
+    /// Inicializa el layout del dock a partir de la factory.
+    /// Se usa como inicializador de campo para ser compatible con el constructor primario.
+    /// </summary>
+    private static IRootDock CreateAndInitLayout(AppDockFactory factory)
+    {
+        var layout = factory.CreateLayout();
+        factory.InitLayout(layout);
+        return layout;
+    }
 
     /// <summary>
     /// Crea un nuevo proyecto.
@@ -39,7 +47,6 @@ internal partial class MainShellViewModel(TemplateEditorShellViewModel templateE
     [RelayCommand]
     private async Task NewProjectAsync()
     {
-        // Obtener la ventana principal desde ApplicationLifetime
         if (Avalonia.Application.Current?.ApplicationLifetime is not Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
             return;
 
@@ -50,13 +57,13 @@ internal partial class MainShellViewModel(TemplateEditorShellViewModel templateE
         var file = await mainWindow.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
             Title = "Nuevo Proyecto",
-            FileTypeChoices = new[]
-            {
+            FileTypeChoices =
+            [
                 new FilePickerFileType(ProjectConstants.ProjectFileTypeName)
                 {
-                    Patterns = new[] { ProjectConstants.ProjectFilePattern }
+                    Patterns = [ProjectConstants.ProjectFilePattern]
                 }
-            },
+            ],
             DefaultExtension = ProjectConstants.ProjectFileExtension,
             SuggestedFileName = "NuevoProyecto"
         });
@@ -64,19 +71,17 @@ internal partial class MainShellViewModel(TemplateEditorShellViewModel templateE
         if (file != null)
         {
             var filePath = file.Path.LocalPath;
-            var projectName = System.IO.Path.GetFileNameWithoutExtension(filePath);
-
+            var projectName = Path.GetFileNameWithoutExtension(filePath);
             await _projectService.CreateNewProjectAsync(filePath, projectName);
         }
     }
 
     /// <summary>
-    /// Abre un di�logo para seleccionar un proyecto y lo carga.
+    /// Abre un diálogo para seleccionar un proyecto y lo carga.
     /// </summary>
     [RelayCommand]
     private async Task OpenProjectAsync()
     {
-        // Obtener la ventana principal desde ApplicationLifetime
         if (Avalonia.Application.Current?.ApplicationLifetime is not Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
             return;
 
@@ -99,12 +104,7 @@ internal partial class MainShellViewModel(TemplateEditorShellViewModel templateE
 
         var file = files?.FirstOrDefault();
         if (file != null)
-        {
             await _projectService.OpenProjectAsync(file.Path.LocalPath);
-
-            // Refrescar el explorador de proyectos
-            projectExplorerShellViewModel.RefreshProjectContextCommand.Execute(null);
-        }
     }
 
     /// <summary>
@@ -126,12 +126,11 @@ internal partial class MainShellViewModel(TemplateEditorShellViewModel templateE
     }
 
     /// <summary>
-    /// Guarda el proyecto en una nueva ubicaci�n.
+    /// Guarda el proyecto en una nueva ubicación.
     /// </summary>
     [RelayCommand]
     private async Task SaveProjectAsAsync()
     {
-        // Obtener la ventana principal desde ApplicationLifetime
         if (Avalonia.Application.Current?.ApplicationLifetime is not Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
             return;
 
@@ -153,29 +152,11 @@ internal partial class MainShellViewModel(TemplateEditorShellViewModel templateE
         });
 
         if (file != null)
-        {
             await _projectService.SaveProjectAsAsync(file.Path.LocalPath);
-
-            // Refrescar el explorador de proyectos
-            projectExplorerShellViewModel.RefreshProjectContextCommand.Execute(null);
-        }
-    }
-
-    [RelayCommand]
-    private void NavigateToTemplateEditor()
-    {
-        CurrentViewModel = templateEditorShellViewModel;
-    }
-
-    [RelayCommand]
-    private void NavigateToSettings()
-    {
-        CurrentViewModel = settingsShellViewModel;
     }
 
     [RelayCommand]
     private static void Exit()
     {
-        
     }
 }

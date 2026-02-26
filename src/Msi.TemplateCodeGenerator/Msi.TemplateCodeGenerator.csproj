@@ -34,5 +34,8 @@
 		<PackageReference Include="Serilog.Sinks.File" />
 		<PackageReference Include="Serilog.Settings.Configuration" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+		<PackageReference Include="Dock.Avalonia" />
+		<PackageReference Include="Dock.Model.Mvvm" />
+		<PackageReference Include="Dock.Avalonia.Themes.Fluent" />
 	</ItemGroup>
 </Project>

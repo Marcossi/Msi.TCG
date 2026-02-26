@@ -8,7 +8,5 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         Title="Template Code Generator" Height="600" Width="1000">
         <!--d:DataContext="{d:DesignInstance Type=local:MainShellViewModel, IsDesignTimeCreatable=False}"-->       
-    <Border Background="LightGreen">
-        <local:MainShellView Margin="5"/>
-    </Border>
+    <local:MainShellView />
 </Window>
