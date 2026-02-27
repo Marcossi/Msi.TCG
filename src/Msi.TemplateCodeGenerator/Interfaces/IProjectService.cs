@@ -30,4 +30,10 @@ public interface IProjectService
     /// Crea un nuevo proyecto en la ruta especificada.
     /// </summary>
     Task CreateNewProjectAsync(string projectPath, string projectName);
+
+    /// <summary>
+    /// Refresca la lista de ficheros del proyecto activo
+    /// escaneando la carpeta raíz del proyecto en disco.
+    /// </summary>
+    Task RefreshFilesAsync();
 }

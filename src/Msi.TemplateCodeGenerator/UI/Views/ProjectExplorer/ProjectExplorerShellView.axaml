@@ -1,28 +1,65 @@
 <UserControl x:Class="Msi.TemplateCodeGenerator.UI.ProjectExplorer.ProjectExplorerShellView"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:Msi.TemplateCodeGenerator.UI.Settings"
-             mc:Ignorable="d" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:converters="clr-namespace:Msi.TemplateCodeGenerator.UI.Converters"
+             xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+             xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+             mc:Ignorable="d"
              x:ClassModifier="internal"
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-        <StackPanel HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Spacing="8">
-            <TextBlock Text="Explorador de proyectos"
-                       HorizontalAlignment="Center"
-                       FontSize="20"/>
-            <TextBlock Text="Proyecto actual:" />
-            <TextBlock Text="{Binding ProjectName}" />
-            <Button Content="Refrescar"
-                    Command="{Binding RefreshProjectContextCommand}"
-                    Width="120" />
-            <Button Content="[TEST] Crear Documento"
-                    Command="{Binding CreateTestDocumentCommand}"
-                    Width="160"
-                    Margin="0,10,0,0" />
-        </StackPanel>
-    </Grid>
+
+    <UserControl.Resources>
+        <converters:FileTypeToIconConverter x:Key="FileTypeToIcon" />
+        <converters:FileTypeToForegroundConverter x:Key="FileTypeToForeground" />
+        <FontFamily x:Key="SegoeIconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+    </UserControl.Resources>
+    <DockPanel>
+
+        <!-- Barra de herramientas -->
+        <Border DockPanel.Dock="Top"
+                BorderThickness="0,0,0,1"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                Padding="4,2">
+            <StackPanel Orientation="Horizontal" Spacing="2">
+                <Button Command="{Binding RefreshProjectContextCommand}"
+                        ToolTip.Tip="Refrescar ficheros"
+                        Width="26" Height="26"
+                        Padding="0" FontSize="14"
+                        Content="↻" />
+                <Button Command="{Binding CreateTestDocumentCommand}"
+                        ToolTip.Tip="[TEST] Crear Documento"
+                        Width="26" Height="26"
+                        Padding="0" FontSize="13"
+                        Content="＋" />
+            </StackPanel>
+        </Border>
+
+        <!-- Árbol de ficheros del proyecto -->
+        <TreeView ItemsSource="{Binding FileTree}">
+            <TreeView.Styles>
+                <Style Selector="TreeViewItem">
+                    <Setter Property="IsExpanded" Value="{Binding IsExpanded}" />
+                </Style>
+            </TreeView.Styles>
+            <TreeView.ItemTemplate>
+                <TreeDataTemplate ItemsSource="{Binding Children}">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <i:Interaction.Behaviors>
+                            <ia:EventTriggerBehavior EventName="DoubleTapped">
+                                <ia:InvokeCommandAction
+                                    Command="{Binding DataContext.OpenEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}" />
+                            </ia:EventTriggerBehavior>
+                        </i:Interaction.Behaviors>
+                        <TextBlock Text="{Binding Type, Converter={StaticResource FileTypeToIcon}}"
+                                   Foreground="{Binding Type, Converter={StaticResource FileTypeToForeground}}"
+                                   FontFamily="{StaticResource SegoeIconFont}" />
+                        <TextBlock Text="{Binding Name}" />
+                    </StackPanel>
+                </TreeDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+    </DockPanel>
 </UserControl>

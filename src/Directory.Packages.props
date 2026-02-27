@@ -25,6 +25,7 @@
 	<PackageVersion Include="Dock.Avalonia" Version="11.3.11.16" />
 	<PackageVersion Include="Dock.Model.Mvvm" Version="11.3.11.16" />
 	<PackageVersion Include="Dock.Avalonia.Themes.Fluent" Version="11.3.11.16" />
+	<PackageVersion Include="Avalonia.Xaml.Behaviors" Version="11.3.0.6" />
 	<!-- Otros -->
 	<PackageVersion Include="Scriban" Version="6.5.3" />
   </ItemGroup>

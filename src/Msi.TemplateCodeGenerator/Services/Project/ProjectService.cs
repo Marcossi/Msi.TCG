@@ -9,19 +9,11 @@ namespace Msi.TemplateCodeGenerator.Services.Project;
 /// Actualiza el IProjectContext y maneja FileWatcher, carga/guardado, validaciones, etc.
 /// Notifica cambios mediante mensajería (IMessenger).
 /// </summary>
-internal sealed class ProjectService : IProjectService
+internal sealed partial class ProjectService(IProjectContext context, IProjectSerializer serializer, IMessenger messenger) : IProjectService
 {
-    private readonly ProjectContext _context;
-    private readonly IProjectSerializer _serializer;
-    private readonly IMessenger _messenger;
-
-    public ProjectService(IProjectContext context, IProjectSerializer serializer, IMessenger messenger)
-    {
-        // Downcasting seguro porque registramos ProjectContext como singleton
-        _context = (ProjectContext)context;
-        _serializer = serializer;
-        _messenger = messenger;
-    }
+    private readonly ProjectContext _context = (ProjectContext)context;
+    private readonly IProjectSerializer _serializer = serializer;
+    private readonly IMessenger _messenger = messenger;
 
     /// <summary>
     /// Abre un proyecto desde la ruta especificada.
@@ -35,6 +27,8 @@ internal sealed class ProjectService : IProjectService
 
         // Cargar proyecto desde disco usando el serializador
         var project = await _serializer.LoadAsync(projectPath);
+
+        project.FolderPath = Path.GetDirectoryName(projectPath) ?? string.Empty;
 
         // TODO: Iniciar FileWatcher
 
@@ -124,7 +118,8 @@ internal sealed class ProjectService : IProjectService
         // Crear nuevo proyecto
         var project = new Models.Project
         {
-            Name = projectName
+            Name = projectName,
+            FolderPath = Path.GetDirectoryName(projectPath) ?? string.Empty
         };
 
         // Guardar el proyecto en disco
@@ -139,4 +134,6 @@ internal sealed class ProjectService : IProjectService
         // Notificar a toda la aplicación
         _messenger.Send(new ProjectOpenedMessage(projectPath));
     }
+
 }
+
