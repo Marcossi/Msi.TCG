@@ -41,23 +41,40 @@ Para comenzar a usar **Msi.TemplateCodeGenerator**, sigue estos pasos:
 
 ## Estructura de Carpetas
 
-El proyecto sigue una organización estándar para aplicaciones WPF/Avalonia con MVVM:
+El proyecto sigue una organización estándar para aplicaciones Avalonia con MVVM:
 
 ```
 Msi.TemplateCodeGenerator/
-├── Constants/           ← Constantes de la aplicación (ProjectConstants con extensiones y versiones)
+├── Constants/           ← Constantes de la aplicación (ProjectConstants, NavigationConstants)
 ├── Messages/            ← Mensajes del sistema de mensajería (ProjectOpenedMessage, etc.)
 ├── Models/              ← POCOs de dominio/negocio (Project, Template, etc.)
-├── Interfaces/          ← Contratos publicados en el IoC (IProjectContext, IProjectService, ITemplatesService, IProjectSerializer)
-├── Services/            ← Implementaciones de servicios registrados en el IoC
+├── Interfaces/          ← Contratos publicados en el IoC
+├── Services/            ← Servicios de dominio e infraestructura (sin dependencias de UI)
 │   ├── Project/         ← ProjectContext, ProjectService, JsonProjectSerializer
 │   └── Templates/       ← TemplatesService
-└── UI/                  ← ViewModels y Views (MVVM)
-    ├── MainShellViewModel.cs + MainShellView.axaml (Shell principal)
+└── UI/                  ← Todo lo relacionado con la presentación
+    ├── Services/        ← Servicios específicos de UI (dependen de Avalonia/Dock/etc.)
+    │   └── Navigation/  ← AppDockFactory, NavigationService
+    ├── MainShellViewModel.cs + MainShellView.axaml
     ├── ProjectExplorer/
     ├── TemplateEditor/
     └── Settings/
 ```
+
+## Separación de Servicios: Dominio vs UI
+
+Existen **dos categorías** de servicios en la aplicación:
+
+### Servicios de Dominio/Infraestructura (`Services/`)
+- **Sin dependencias de UI**: podrían usarse en consola, tests unitarios, etc.
+- **Regla**: si el servicio no importa nada de Avalonia, Dock u otros frameworks de UI → va aquí.
+- Ejemplos: `ProjectService`, `TemplatesService`, `JsonProjectSerializer`.
+
+### Servicios de UI (`UI/Services/`)
+- **Dependen de frameworks de presentación**: Avalonia, Dock.Avalonia, etc.
+- **Regla**: si el servicio usa tipos de Avalonia o gestiona estado visual → va aquí.
+- Ejemplos: `NavigationService` (usa Dock.Avalonia), futuro `DialogService`, `NotificationService`.
+- `AppDockFactory` también vive aquí: crea objetos de Dock.Avalonia y es detalle interno de `NavigationService`.
 
 ## Separación de Responsabilidades
 
@@ -120,7 +137,80 @@ Msi.TemplateCodeGenerator/
 - Separación clara: el contexto crece con datos, el servicio con lógica.
 - Reutilizable: múltiples ViewModels pueden leer del mismo contexto sin duplicar estado.
 
-## Comandos Globales y Locales
+## Sistema de Navegación (Dock.Avalonia)
+
+La aplicación usa **Dock.Avalonia** para gestionar paneles, pestañas y ventanas flotantes similar a Visual Studio.
+
+### Arquitectura del Dock
+
+```
+INavigationService          NavigationService (impl)           AppDockFactory
+──────────────────────      ─────────────────────────────      ──────────────────────────
+GetLayout()            →    EnsureLayoutInitialized()    →    CreateLayout()
+ActivateDockable(id)   →    factory.SetActiveDockable()       └→ Resuelve VMs del IoC
+HideDockable(id)       →    factory.HideDockable()
+OpenFile(path)         →    Crea Document transitorio
+```
+
+### Componentes Clave
+
+#### `INavigationService`
+- Contrato público que abstrae Dock.Avalonia del resto de la aplicación.
+- Métodos:
+  - `GetLayout()`: Devuelve `IRootDock` para binding en MainShellViewModel (única concesión a Dock).
+  - `ActivateDockable(id)`: Activa un panel por ID (ver `NavigationConstants`).
+  - `HideDockable(id)`: Oculta un panel.
+  - `OpenFile(path)`: Abre un archivo en un nuevo editor (pestaña).
+
+#### `NavigationService`
+- Implementación que delega en `AppDockFactory`.
+- **Lazy initialization**: El layout se crea bajo demanda la primera vez que se solicita.
+- Evita dependencias circulares: el constructor NO inicializa el layout.
+- Usa `IServiceProvider` para crear ViewModels transitorios (editores).
+
+#### `AppDockFactory : Factory`
+- Hereda de `Dock.Model.Mvvm.Factory`.
+- **Lazy resolution de ViewModels**: Resuelve desde `IServiceProvider` en `CreateLayout()`, no en el constructor.
+- Define la estructura del layout:
+  ```
+  RootDock
+  └── ProportionalDock (horizontal)
+      ├── ToolDock (22% ancho) ← ProjectExplorer
+      ├── Splitter (redimensionable)
+      └── DocumentDock (restante, pestañas) ← Editores, Settings
+  ```
+
+### Resolución de Dependencias Circulares
+
+**Problema original**:
+```
+MainShellViewModel → NavigationService → AppDockFactory → ProjectExplorerVM → NavigationService ❌
+```
+
+**Solución implementada**:
+1. `AppDockFactory` recibe `IServiceProvider`, no los ViewModels directamente.
+2. `NavigationService` NO inicializa el layout en su constructor.
+3. La primera llamada a `GetLayout()` dispara `EnsureLayoutInitialized()`.
+4. **Ahora** sí se resuelven los ViewModels (todos ya construidos). ✅
+
+### DataTemplates para Dock
+
+En `MainShellView.axaml`, los DataTemplates genéricos mapean tipos de Dock a ViewModels:
+
+```xml
+<dock:DockControl.DataTemplates>
+    <!-- Tool → ViewLocator resuelve la View desde el Context (ViewModel) -->
+    <DataTemplate DataType="{x:Type dockMvvm:Tool}">
+        <ContentControl Content="{Binding Context}" />
+    </DataTemplate>
+    <!-- Document → ViewLocator resuelve la View desde el Context -->
+    <DataTemplate DataType="{x:Type dockMvvm:Document}">
+        <ContentControl Content="{Binding Context}" />
+    </DataTemplate>
+</dock:DockControl.DataTemplates>
+```
+
+El `ViewLocator` (App.axaml) resuelve automáticamente `ViewModel → View` por convención de nombres.
 
 **Problema resuelto**: Comunicación entre servicios y ViewModels sin acoplamiento.
 

@@ -4,6 +4,7 @@ using Avalonia.Controls.Templates;
 using Msi.TemplateCodeGenerator.UI;
 using Msi.TemplateCodeGenerator.UI.ProjectExplorer;
 using Msi.TemplateCodeGenerator.UI.TemplateEditor;
+using Msi.TemplateCodeGenerator.UI.Views;
 
 namespace Msi.TemplateCodeGenerator;
 

@@ -5,6 +5,7 @@ using Msi.TemplateCodeGenerator.Services.Project;
 using Msi.TemplateCodeGenerator.Services.Templates;
 using Msi.TemplateCodeGenerator.UI;
 using Msi.TemplateCodeGenerator.UI.ProjectExplorer;
+using Msi.TemplateCodeGenerator.UI.Services.Navigation;
 using Msi.TemplateCodeGenerator.UI.Settings;
 using Msi.TemplateCodeGenerator.UI.TemplateEditor;
 
@@ -20,15 +21,29 @@ public static class DependencyInjection
     /// </summary>
     public static IServiceCollection AddTemplateCodeGeneratorServices(this IServiceCollection services)
     {
+        //----------------------
+        // Infraestructura (UI)
+        //----------------------
         // Registrar los servicios específicos de la UI
         services.AddSingleton<MainWindow>();
 
         // Registrar los ViewModels de las "páginas".
         services.AddSingleton<MainShellViewModel>();
-        services.AddSingleton<TemplateEditorShellViewModel>();
         services.AddSingleton<SettingsShellViewModel>();
+
+        // Registrar dock: AppDockFactory (interna) + INavigationService (pública)
+        services.AddSingleton<AppDockFactory>();
+        services.AddSingleton<INavigationService, NavigationService>();
+
+        // Registrar Dock: tipos de Tools
         services.AddSingleton<ProjectExplorerShellViewModel>();
 
+        // Registrar Dock: tipos de Document
+        services.AddScoped<TemplateEditorShellViewModel>();
+
+        //---------
+        // Dominio
+        //---------
         // Registrar sistema de mensajería
         services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
 
@@ -39,9 +54,6 @@ public static class DependencyInjection
 
         // Registrar otros servicios
         services.AddSingleton<ITemplatesService, TemplatesService>();
-
-        // Registrar factory del dock (recibe los VMs del IoC)
-        services.AddSingleton<AppDockFactory>();
 
         return services;
     }

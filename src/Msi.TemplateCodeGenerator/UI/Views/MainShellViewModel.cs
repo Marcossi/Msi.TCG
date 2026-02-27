@@ -4,42 +4,29 @@ using CommunityToolkit.Mvvm.Input;
 using Dock.Model.Controls;
 using Msi.TemplateCodeGenerator.Constants;
 using Msi.TemplateCodeGenerator.Interfaces;
-using Msi.TemplateCodeGenerator.UI.ProjectExplorer;
+using Msi.TemplateCodeGenerator.UI.Views;
 
 namespace Msi.TemplateCodeGenerator.UI;
 
 /// <summary>
 /// ViewModel principal que coordina el shell y los comandos globales de la aplicación.
-/// El layout (paneles, pestañas) es gestionado por AppDockFactory y DockControl.
+/// El layout de paneles se obtiene de INavigationService.
 /// Las operaciones de proyecto se delegan en IProjectService.
 /// </summary>
-
 internal partial class MainShellViewModel(
-    AppDockFactory dockFactory,
-    IProjectService projectService,
-    ProjectExplorerShellViewModel projectExplorerShellViewModel)
+    INavigationService navigationService,
+    IProjectService projectService)
     : BaseViewModel
 {
     private readonly IProjectService _projectService = projectService;
 
-    ///      XAML ViewModel
-    ///────────────────────────────────────────────────
-    /// DockControl  ←──binding──  Layout(IRootDock)
-    /// (lo que ves)                (lo que manipulas)
+    ///      XAML                    ViewModel
+    ///──────────────────────────────────────────────────────────
+    /// DockControl  ←──binding──  Layout (IRootDock)
+    /// (lo que ves)                (obtenido de INavigationService)
 
     [ObservableProperty]
-    private IRootDock? _layout = CreateAndInitLayout(dockFactory);
-
-    /// <summary>
-    /// Inicializa el layout del dock a partir de la factory.
-    /// Se usa como inicializador de campo para ser compatible con el constructor primario.
-    /// </summary>
-    private static IRootDock CreateAndInitLayout(AppDockFactory factory)
-    {
-        var layout = factory.CreateLayout();
-        factory.InitLayout(layout);
-        return layout;
-    }
+    private IRootDock? _layout = navigationService.GetLayout();
 
     /// <summary>
     /// Crea un nuevo proyecto.
@@ -71,7 +58,7 @@ internal partial class MainShellViewModel(
         if (file != null)
         {
             var filePath = file.Path.LocalPath;
-            var projectName = Path.GetFileNameWithoutExtension(filePath);
+            var projectName = System.IO.Path.GetFileNameWithoutExtension(filePath);
             await _projectService.CreateNewProjectAsync(filePath, projectName);
         }
     }
@@ -93,13 +80,13 @@ internal partial class MainShellViewModel(
         {
             Title = "Abrir Proyecto",
             AllowMultiple = false,
-            FileTypeFilter = new[]
-            {
+            FileTypeFilter =
+            [
                 new FilePickerFileType(ProjectConstants.ProjectFileTypeName)
                 {
-                    Patterns = new[] { ProjectConstants.ProjectFilePattern }
+                    Patterns = [ProjectConstants.ProjectFilePattern]
                 }
-            }
+            ]
         });
 
         var file = files?.FirstOrDefault();
@@ -141,13 +128,13 @@ internal partial class MainShellViewModel(
         var file = await mainWindow.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
             Title = "Guardar Proyecto Como",
-            FileTypeChoices = new[]
-            {
+            FileTypeChoices =
+            [
                 new FilePickerFileType(ProjectConstants.ProjectFileTypeName)
                 {
-                    Patterns = new[] { ProjectConstants.ProjectFilePattern }
+                    Patterns = [ProjectConstants.ProjectFilePattern]
                 }
-            },
+            ],
             DefaultExtension = ProjectConstants.ProjectFileExtension
         });
 

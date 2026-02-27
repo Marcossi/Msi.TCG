@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Msi.TemplateCodeGenerator.Interfaces;
+using Msi.TemplateCodeGenerator.UI.Views;
 
 namespace Msi.TemplateCodeGenerator.UI.TemplateEditor;
 
@@ -7,6 +8,9 @@ internal partial class TemplateEditorShellViewModel(ITemplatesService templatesS
 {
     [ObservableProperty]
     private string _statusMessage = "Hello World! From: Template Editor ShellViewModel!";
+
+    [ObservableProperty]
+    private string? _filePath;
 
     [ObservableProperty]
     private string _templateContent = """
@@ -100,5 +104,15 @@ internal partial class TemplateEditorShellViewModel(ITemplatesService templatesS
         {
             // La tarea fue cancelada porque el usuario escribió algo nuevo. Ignoramos.
         }
+    }
+
+    /// <summary>
+    /// Carga un archivo de plantilla en el editor.
+    /// </summary>
+    public void LoadFile(string filePath)
+    {
+        FilePath = filePath;
+        // TODO: Leer el contenido del archivo y asignarlo a TemplateContent
+        // TemplateContent = File.ReadAllText(filePath);
     }
 }

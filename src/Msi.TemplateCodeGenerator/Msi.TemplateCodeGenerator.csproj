@@ -38,4 +38,8 @@
 		<PackageReference Include="Dock.Model.Mvvm" />
 		<PackageReference Include="Dock.Avalonia.Themes.Fluent" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="UI\TemplateEditor\" />
+	</ItemGroup>
 </Project>

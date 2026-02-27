@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Msi.TemplateCodeGenerator.UI.Views;
 
 namespace Msi.TemplateCodeGenerator.UI.Settings;
 

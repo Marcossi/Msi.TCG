@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Msi.TemplateCodeGenerator.Interfaces;
 using Msi.TemplateCodeGenerator.Messages;
+using Msi.TemplateCodeGenerator.UI.Views;
 
 namespace Msi.TemplateCodeGenerator.UI.ProjectExplorer;
 
@@ -14,6 +15,7 @@ internal partial class ProjectExplorerShellViewModel : BaseViewModel
 {
     private readonly IProjectContext _projectContext;
     private readonly IMessenger _messenger;
+    private readonly INavigationService _navigationService;
 
     [ObservableProperty]
     private bool _isProjectOpen;
@@ -21,10 +23,14 @@ internal partial class ProjectExplorerShellViewModel : BaseViewModel
     [ObservableProperty]
     private string _projectName = "sin solución";
 
-    public ProjectExplorerShellViewModel(IProjectContext projectContext, IMessenger messenger)
+    public ProjectExplorerShellViewModel(
+        IProjectContext projectContext, 
+        IMessenger messenger,
+        INavigationService navigationService)
     {
         _projectContext = projectContext;
         _messenger = messenger;
+        _navigationService = navigationService;
 
         // Suscribirse a eventos de proyecto
         _messenger.Register<ProjectOpenedMessage>(this, (recipient, message) => ((ProjectExplorerShellViewModel)recipient).RefreshProjectContext());
@@ -48,5 +54,14 @@ internal partial class ProjectExplorerShellViewModel : BaseViewModel
 
         // Usar el nombre del proyecto directamente desde el modelo de dominio
         ProjectName = _projectContext.CurrentProject?.Name ?? "sin solución";
+    }
+
+    /// <summary>
+    /// Comando de prueba: abre un nuevo documento de prueba.
+    /// </summary>
+    [RelayCommand]
+    private void CreateTestDocument()
+    {
+        _navigationService.OpenFile($"test_{System.Guid.NewGuid():N}.scriban");
     }
 }
