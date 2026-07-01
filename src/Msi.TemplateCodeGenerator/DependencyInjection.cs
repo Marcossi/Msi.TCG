@@ -3,11 +3,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Msi.TemplateCodeGenerator.Interfaces;
 using Msi.TemplateCodeGenerator.Services.Project;
 using Msi.TemplateCodeGenerator.Services.Templates;
-using Msi.TemplateCodeGenerator.UI;
-using Msi.TemplateCodeGenerator.UI.ProjectExplorer;
+using Msi.TemplateCodeGenerator.Services;
+using Msi.TemplateCodeGenerator.UI.Services.Dialogs;
 using Msi.TemplateCodeGenerator.UI.Services.Navigation;
-using Msi.TemplateCodeGenerator.UI.Settings;
-using Msi.TemplateCodeGenerator.UI.TemplateEditor;
+using Msi.TemplateCodeGenerator.UI.Views.ProjectExplorer.ViewModels;
+using Msi.TemplateCodeGenerator.UI.Views.Settings.ViewModels;
+using Msi.TemplateCodeGenerator.UI.Views.Shell;
+using Msi.TemplateCodeGenerator.UI.Views.Shell.ViewModels;
+using Msi.TemplateCodeGenerator.UI.Views.TemplateEditor.ViewModels;
 
 namespace Msi.TemplateCodeGenerator;
 
@@ -53,6 +56,9 @@ public static class DependencyInjection
         services.AddSingleton<IProjectService, ProjectService>();
 
         // Registrar otros servicios
+        services.AddSingleton<IFileService, FileService>();
+        services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<IFileDialogService, FileDialogService>();
         services.AddSingleton<ITemplatesService, TemplatesService>();
 
         return services;

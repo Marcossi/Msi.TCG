@@ -1,9 +1,9 @@
 using Avalonia.Controls;
 
-namespace Msi.TemplateCodeGenerator.UI.TemplateEditor;
+namespace Msi.TemplateCodeGenerator.UI.Views.TemplateEditor;
 
 /// <summary>
-/// Lógica de interacción para TemplateEditorShellView.xaml
+/// Lï¿½gica de interacciï¿½n para TemplateEditorShellView.xaml
 /// </summary>
 internal partial class TemplateEditorShellView : UserControl
 {

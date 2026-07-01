@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Msi.TemplateCodeGenerator.Constants;
 using Msi.TemplateCodeGenerator.Interfaces;
 using ProjectModel = Msi.TemplateCodeGenerator.Models.Project;
@@ -10,8 +11,9 @@ namespace Msi.TemplateCodeGenerator.Services.Project;
 /// NOTA: Los comentarios se leen pero NO se preservan al guardar.
 /// TODO: Evaluar migración a JSON5 si se requiere preservar comentarios.
 /// </summary>
-internal sealed class JsonProjectSerializer : IProjectSerializer
+internal sealed class JsonProjectSerializer(ILogger<JsonProjectSerializer> logger) : IProjectSerializer
 {
+    private readonly ILogger<JsonProjectSerializer> _logger = logger;
     private static readonly JsonSerializerOptions _options = new()
     {
         WriteIndented = true,
@@ -39,18 +41,22 @@ internal sealed class JsonProjectSerializer : IProjectSerializer
         if (string.IsNullOrWhiteSpace(filePath))
             throw new ArgumentException("File path cannot be empty.", nameof(filePath));
 
+        _logger.LogInformation("Guardando proyecto en '{FilePath}'", filePath);
+
         // Crear el DTO con versión
-        var dto = new ProjectFileDto
+        ProjectFileDto dto = new()
         {
             FileFormatVersion = ProjectConstants.CurrentFileFormatVersion,
             Project = project
         };
 
         // Serializar a JSON
-        var json = JsonSerializer.Serialize(dto, _options);
+        string json = JsonSerializer.Serialize(dto, _options);
 
         // Escribir a disco
         await File.WriteAllTextAsync(filePath, json);
+
+        _logger.LogInformation("Proyecto guardado en '{FilePath}'", filePath);
     }
 
     /// <summary>
@@ -64,11 +70,13 @@ internal sealed class JsonProjectSerializer : IProjectSerializer
         if (!File.Exists(filePath))
             throw new FileNotFoundException("Project file not found.", filePath);
 
+        _logger.LogInformation("Cargando proyecto desde '{FilePath}'", filePath);
+
         // Leer archivo JSON
-        var json = await File.ReadAllTextAsync(filePath);
+        string json = await File.ReadAllTextAsync(filePath);
 
         // Deserializar DTO
-        var dto = JsonSerializer.Deserialize<ProjectFileDto>(json, _options);
+        ProjectFileDto? dto = JsonSerializer.Deserialize<ProjectFileDto>(json, _options);
         if (dto == null)
             throw new InvalidOperationException("Failed to deserialize project file.");
 
@@ -94,6 +102,8 @@ internal sealed class JsonProjectSerializer : IProjectSerializer
 
         if (dto.Project == null)
             throw new InvalidOperationException("Project data is missing in the file.");
+
+        _logger.LogInformation("Proyecto cargado desde '{FilePath}'", filePath);
 
         return dto.Project;
     }

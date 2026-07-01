@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
 
-namespace Msi.TemplateCodeGenerator.UI.Settings;
+namespace Msi.TemplateCodeGenerator.UI.Views.Settings;
 /// <summary>
 /// Lógica de interacción para SettingsShellView.xaml
 /// </summary>

@@ -1,0 +1,56 @@
+<Project>
+    <!-- Propiedades comunes para todos los proyectos de la soluci�n -->
+    <PropertyGroup>
+        <!-- Versi�n de C# y caracter�sticas del lenguaje -->
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        
+        <!-- Configuraci�n de compilaci�n -->
+        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+        <WarningLevel>5</WarningLevel>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <AnalysisLevel>latest</AnalysisLevel>
+        
+        <!-- Configuraci�n de salida -->
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1591</NoWarn> <!-- Suprime advertencias de documentaci�n XML faltante -->
+        
+        <!-- Determinismo para builds reproducibles -->
+        <Deterministic>true</Deterministic>
+        <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+        
+        <!-- Informaci�n del producto -->
+        <Company>Msi</Company>
+        <Product>Template Code Generator</Product>
+        <Copyright>Copyright � $(Company) $([System.DateTime]::Now.Year)</Copyright>
+        <Authors>Msi Development Team</Authors>
+        
+        <!-- Versionado -->
+        <Version>1.0.0</Version>
+        <FileVersion>$(Version)</FileVersion>
+        <AssemblyVersion>$(Version)</AssemblyVersion>
+    </PropertyGroup>
+    
+    <!-- Configuraci�n del sistema de Artifacts (SDK-style output) -->
+    <PropertyGroup>
+        <!-- Habilitar el nuevo sistema de artifacts -->
+        <UseArtifactsOutput>true</UseArtifactsOutput>
+        <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
+    </PropertyGroup>
+    
+    <!-- Configuraci�n espec�fica para proyectos Debug -->
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+        <DebugType>full</DebugType>
+        <DebugSymbols>true</DebugSymbols>
+        <Optimize>false</Optimize>
+    </PropertyGroup>
+    
+    <!-- Configuraci�n espec�fica para proyectos Release -->
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <DebugType>embedded</DebugType>
+        <DebugSymbols>true</DebugSymbols>
+        <Optimize>true</Optimize>
+    </PropertyGroup>
+</Project>

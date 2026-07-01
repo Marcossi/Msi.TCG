@@ -1,0 +1,39 @@
+## Ejemplo 2 — Capture único a un fichero (renderiza N elementos dentro)
+
+/*
+  Descripción:
+  - Este ejemplo muestra cómo capturar contenido en una variable
+    y asociarlo a un único fichero de salida.
+  - Iteramos sobre `Model.Elements` y renderizamos todos los
+    elementos dentro de una sola captura llamada `all_content`.
+  - Al final mostramos la directiva de fichero y el contenido capturado.
+*/
+
+{{ OutputFile = "Generated/AllElements.md" }}
+
+{{- capture all_content -}}
+# Elementos generados ({{ Model.Elements.size }})
+
+{{~ for element in Model.Elements ~}}
+## {{ element.Name }} (ID: {{ element.Id }})
+Descripción: {{ element.Description }}
+
+Campos:
+{{~ for field in element.Fields ~}}
+- {{ field.Accessibility }} {{ field.Type }} {{ field.Name }}
+{{~ end ~}}
+
+{{~ end ~}}
+{{- end -}}
+
+/* Directiva de salida (interprete de generación debe crear este fichero): */
+--- FILE: {{ OutputFile }} ---
+{{ all_content }}
+
+/*
+  Notas:
+  - Aquí `all_content` contiene N entradas (una por elemento).
+  - El procesador que use estas plantillas puede detectar la
+    directiva `--- FILE: ... ---` para crear un solo fichero con
+    todo el contenido generado.
+*/

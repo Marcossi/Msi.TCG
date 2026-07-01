@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.Extensions.Logging;
 using Msi.TemplateCodeGenerator.Interfaces;
 using Msi.TemplateCodeGenerator.Messages;
 
@@ -9,8 +10,13 @@ namespace Msi.TemplateCodeGenerator.Services.Project;
 /// Actualiza el IProjectContext y maneja FileWatcher, carga/guardado, validaciones, etc.
 /// Notifica cambios mediante mensajería (IMessenger).
 /// </summary>
-internal sealed partial class ProjectService(IProjectContext context, IProjectSerializer serializer, IMessenger messenger) : IProjectService
+internal sealed partial class ProjectService(
+    IProjectContext context,
+    IProjectSerializer serializer,
+    IMessenger messenger,
+    ILogger<ProjectService> logger) : IProjectService
 {
+    private readonly ILogger<ProjectService> _logger = logger;
     private readonly ProjectContext _context = (ProjectContext)context;
     private readonly IProjectSerializer _serializer = serializer;
     private readonly IMessenger _messenger = messenger;
@@ -25,8 +31,10 @@ internal sealed partial class ProjectService(IProjectContext context, IProjectSe
             throw new ArgumentException("Project path cannot be empty.", nameof(projectPath));
         }
 
+        _logger.LogInformation("Abriendo proyecto desde '{ProjectPath}'", projectPath);
+
         // Cargar proyecto desde disco usando el serializador
-        var project = await _serializer.LoadAsync(projectPath);
+        Models.Project project = await _serializer.LoadAsync(projectPath);
 
         project.FolderPath = Path.GetDirectoryName(projectPath) ?? string.Empty;
 
@@ -37,6 +45,8 @@ internal sealed partial class ProjectService(IProjectContext context, IProjectSe
 
         // Notificar a toda la aplicación
         _messenger.Send(new ProjectOpenedMessage(projectPath));
+
+        _logger.LogInformation("Proyecto abierto: '{ProjectPath}'", projectPath);
     }
 
     /// <summary>
@@ -45,12 +55,16 @@ internal sealed partial class ProjectService(IProjectContext context, IProjectSe
     /// </summary>
     public Task CloseProjectAsync()
     {
+        _logger.LogInformation("Cerrando proyecto activo");
+
         // TODO: Detener FileWatcher, limpiar recursos (async)
         _context.CurrentProject = null;
         _context.CurrentProjectPath = null;
 
         // Notificar a toda la aplicación
         _messenger.Send(new ProjectClosedMessage());
+
+        _logger.LogInformation("Proyecto cerrado");
 
         return Task.CompletedTask;
     }
@@ -70,10 +84,15 @@ internal sealed partial class ProjectService(IProjectContext context, IProjectSe
             throw new InvalidOperationException("Project path is not set.");
         }
 
-        await _serializer.SaveAsync(_context.CurrentProject!, _context.CurrentProjectPath);
+        string path = _context.CurrentProjectPath;
+        _logger.LogInformation("Guardando proyecto en '{ProjectPath}'", path);
+
+        await _serializer.SaveAsync(_context.CurrentProject!, path);
 
         // Notificar a toda la aplicación
-        _messenger.Send(new ProjectSavedMessage(_context.CurrentProjectPath));
+        _messenger.Send(new ProjectSavedMessage(path));
+
+        _logger.LogInformation("Proyecto guardado en '{ProjectPath}'", path);
     }
 
     /// <summary>
@@ -91,6 +110,8 @@ internal sealed partial class ProjectService(IProjectContext context, IProjectSe
             throw new ArgumentException("Project path cannot be empty.", nameof(newProjectPath));
         }
 
+        _logger.LogInformation("Guardando proyecto como en '{ProjectPath}'", newProjectPath);
+
         await _serializer.SaveAsync(_context.CurrentProject!, newProjectPath);
 
         // Actualizar la ruta actual después de guardar
@@ -98,6 +119,8 @@ internal sealed partial class ProjectService(IProjectContext context, IProjectSe
 
         // Notificar a toda la aplicación
         _messenger.Send(new ProjectSavedMessage(newProjectPath));
+
+        _logger.LogInformation("Proyecto guardado como en '{ProjectPath}'", newProjectPath);
     }
 
     /// <summary>
@@ -115,8 +138,10 @@ internal sealed partial class ProjectService(IProjectContext context, IProjectSe
             throw new ArgumentException("Project name cannot be empty.", nameof(projectName));
         }
 
+        _logger.LogInformation("Creando nuevo proyecto '{ProjectName}' en '{ProjectPath}'", projectName, projectPath);
+
         // Crear nuevo proyecto
-        var project = new Models.Project
+        Models.Project project = new()
         {
             Name = projectName,
             FolderPath = Path.GetDirectoryName(projectPath) ?? string.Empty
@@ -133,6 +158,8 @@ internal sealed partial class ProjectService(IProjectContext context, IProjectSe
 
         // Notificar a toda la aplicación
         _messenger.Send(new ProjectOpenedMessage(projectPath));
+
+        _logger.LogInformation("Nuevo proyecto creado: '{ProjectName}'", projectName);
     }
 
 }

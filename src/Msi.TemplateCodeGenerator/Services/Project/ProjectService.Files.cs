@@ -17,7 +17,7 @@ internal sealed partial class ProjectService
         if (!_context.IsProjectOpen)
             throw new InvalidOperationException("No project is currently open.");
 
-        var project = _context.CurrentProject!;
+        Models.Project project = _context.CurrentProject!;
 
         if (string.IsNullOrWhiteSpace(project.FolderPath) || !Directory.Exists(project.FolderPath))
             throw new InvalidOperationException("La carpeta del proyecto no existe o su ruta no está configurada.");

@@ -1,13 +1,13 @@
-using System;
 using Dock.Model.Controls;
 using Dock.Model.Core;
 using Dock.Model.Mvvm;
 using Dock.Model.Mvvm.Controls;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Msi.TemplateCodeGenerator.Constants;
-using Msi.TemplateCodeGenerator.UI.ProjectExplorer;
-using Msi.TemplateCodeGenerator.UI.Settings;
-using Msi.TemplateCodeGenerator.UI.TemplateEditor;
+using Msi.TemplateCodeGenerator.UI.Views.ProjectExplorer.ViewModels;
+using Msi.TemplateCodeGenerator.UI.Views.Settings.ViewModels;
+using Msi.TemplateCodeGenerator.UI.Views.TemplateEditor.ViewModels;
 
 namespace Msi.TemplateCodeGenerator.UI.Services.Navigation;
 
@@ -16,14 +16,12 @@ namespace Msi.TemplateCodeGenerator.UI.Services.Navigation;
 /// Resuelve ViewModels bajo demanda desde el IoC para evitar dependencias circulares.
 /// Usada exclusivamente por NavigationService.
 /// </summary>
-internal sealed class AppDockFactory : Factory
+internal sealed class AppDockFactory(
+    IServiceProvider serviceProvider,
+    ILogger<AppDockFactory> logger) : Factory
 {
-    private readonly IServiceProvider _serviceProvider;
-
-    public AppDockFactory(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-    }
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private readonly ILogger<AppDockFactory> _logger = logger;
 
     /// <summary>
     /// Construye el layout completo de la aplicación.
@@ -31,10 +29,14 @@ internal sealed class AppDockFactory : Factory
     /// </summary>
     public override IRootDock CreateLayout()
     {
+        _logger.LogInformation("Construyendo layout del dock");
+
         // Resolver ViewModels bajo demanda (lazy resolution)
-        var projectExplorer = _serviceProvider.GetRequiredService<ProjectExplorerShellViewModel>();
-        var templateEditor = _serviceProvider.GetRequiredService<TemplateEditorShellViewModel>();
-        var settings = _serviceProvider.GetRequiredService<SettingsShellViewModel>();
+        ProjectExplorerShellViewModel projectExplorer = _serviceProvider.GetRequiredService<ProjectExplorerShellViewModel>();
+        TemplateEditorShellViewModel templateEditor = _serviceProvider.GetRequiredService<TemplateEditorShellViewModel>();
+        SettingsShellViewModel settings = _serviceProvider.GetRequiredService<SettingsShellViewModel>();
+
+        _logger.LogDebug("ViewModels resueltos: ProjectExplorer, TemplateEditor, Settings");
 
         // Estructura del layout:
         // RootDock
@@ -43,30 +45,17 @@ internal sealed class AppDockFactory : Factory
         //     │   └── Tool(ProjectExplorer)
         //     ├── Splitter
         //     └── DocumentDock(DocumentsPane)
-        //         ├── Document(TemplateEditor)
-        //         └── Document(Settings)
-        var projectExplorerTool = new Tool
+        //         ├── Document1
+        //         ├── Document2
+        //         └── ...
+        Tool projectExplorerTool = new()
         {
             Id = NavigationConstants.ProjectExplorerId,
             Title = "Explorador de Proyectos",
             Context = projectExplorer
         };
 
-        var templateEditorDocument = new Document
-        {
-            Id = NavigationConstants.TemplateEditorId,
-            Title = "Editor de Plantillas",
-            Context = templateEditor
-        };
-
-        var settingsDocument = new Document
-        {
-            Id = NavigationConstants.SettingsId,
-            Title = "Configuración",
-            Context = settings
-        };
-
-        var leftToolDock = new ToolDock
+        ToolDock leftToolDock = new()
         {
             Id = NavigationConstants.LeftPaneId,
             Proportion = 0.22,
@@ -76,17 +65,15 @@ internal sealed class AppDockFactory : Factory
             GripMode = GripMode.Visible
         };
 
-        var documentDock = new DocumentDock
+        DocumentDock documentDock = new()
         {
             Id = NavigationConstants.DocumentsPaneId,
             Proportion = double.NaN,
             IsCollapsable = false,
-            ActiveDockable = templateEditorDocument,
-            VisibleDockables = CreateList<IDockable>(templateEditorDocument, settingsDocument),
             CanCreateDocument = false
         };
 
-        var mainLayout = new ProportionalDock
+        ProportionalDock mainLayout = new()
         {
             Id = NavigationConstants.MainLayoutId,
             Orientation = Orientation.Horizontal,

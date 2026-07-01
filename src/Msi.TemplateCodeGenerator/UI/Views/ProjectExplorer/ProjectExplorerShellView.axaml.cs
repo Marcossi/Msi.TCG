@@ -1,9 +1,10 @@
-﻿using Avalonia.Controls;
+﻿using Avalonia;
+using Avalonia.Controls;
 
-namespace Msi.TemplateCodeGenerator.UI.ProjectExplorer;
+namespace Msi.TemplateCodeGenerator.UI.Views.ProjectExplorer;
 
 /// <summary>
-/// Lógica de interacción para SettingsShellView.xaml
+/// Lógica de interacción para ProjectExplorerShellView.axaml
 /// </summary>
 internal partial class ProjectExplorerShellView : UserControl
 {

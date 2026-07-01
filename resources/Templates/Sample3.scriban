@@ -1,0 +1,39 @@
+## Ejemplo 3 — Capture por elemento (un fichero procesado por cada elemento)
+
+/*
+  Descripción:
+  - Para cada elemento en `Model.Elements` creamos una captura
+    independiente y asociamos un fichero de salida por elemento.
+  - Esto ilustra cómo generar múltiples ficheros, uno por elemento.
+*/
+
+{{~ for element in Model.Elements ~}}
+  {{- # Crear un nombre de fichero seguro para cada elemento -}}
+  {{ file_name = string.format "Generated/%s.md" element.Name }}
+
+  {{- capture content -}}
+  # {{ element.Name }} (ID: {{ element.Id }})
+
+  Descripción: {{ element.Description }}
+
+  Herencia: {{ if element.BaseClass != null && element.BaseClass != "" }}{{ element.BaseClass }}{{ else }}(sin herencia){{ end }}
+
+  Campos ({{ element.Fields.size }}):
+  {{~ for field in element.Fields ~}}
+  - {{ field.Accessibility }} {{ field.Type }} {{ field.Name }}
+  {{~ end ~}}
+
+  {{- end -}}
+
+  --- FILE: {{ file_name }} ---
+  {{ content }}
+
+{{~ end ~}}
+
+/*
+  Notas:
+  - Cada bloque `capture content` se sobrescribe en la siguiente iteración,
+    pero se imprime inmediatamente junto a su `--- FILE: ... ---`.
+  - Un generador que procese esta plantilla puede crear un fichero por
+    aparición de la directiva `--- FILE: ... ---`.
+*/

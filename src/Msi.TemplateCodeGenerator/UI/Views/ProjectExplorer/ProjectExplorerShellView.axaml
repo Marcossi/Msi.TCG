@@ -1,11 +1,10 @@
-<UserControl x:Class="Msi.TemplateCodeGenerator.UI.ProjectExplorer.ProjectExplorerShellView"
-             xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:converters="clr-namespace:Msi.TemplateCodeGenerator.UI.Converters"
-             xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
-             xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+<UserControl x:Class="Msi.TemplateCodeGenerator.UI.Views.ProjectExplorer.ProjectExplorerShellView"
+              xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+              xmlns:converters="clr-namespace:Msi.TemplateCodeGenerator.UI.Views.ProjectExplorer.Converters"
+              xmlns:vm="clr-namespace:Msi.TemplateCodeGenerator.UI.Views.ProjectExplorer.ViewModels"
              mc:Ignorable="d"
              x:ClassModifier="internal"
              d:DesignHeight="450" d:DesignWidth="800">
@@ -37,7 +36,7 @@
         </Border>
 
         <!-- Árbol de ficheros del proyecto -->
-        <TreeView ItemsSource="{Binding FileTree}">
+        <TreeView x:Name="FileTree" ItemsSource="{Binding FileTree}" SelectedItem="{Binding SelectedFileEntry}">
             <TreeView.Styles>
                 <Style Selector="TreeViewItem">
                     <Setter Property="IsExpanded" Value="{Binding IsExpanded}" />
@@ -46,13 +45,6 @@
             <TreeView.ItemTemplate>
                 <TreeDataTemplate ItemsSource="{Binding Children}">
                     <StackPanel Orientation="Horizontal" Spacing="4">
-                        <i:Interaction.Behaviors>
-                            <ia:EventTriggerBehavior EventName="DoubleTapped">
-                                <ia:InvokeCommandAction
-                                    Command="{Binding DataContext.OpenEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                    CommandParameter="{Binding}" />
-                            </ia:EventTriggerBehavior>
-                        </i:Interaction.Behaviors>
                         <TextBlock Text="{Binding Type, Converter={StaticResource FileTypeToIcon}}"
                                    Foreground="{Binding Type, Converter={StaticResource FileTypeToForeground}}"
                                    FontFamily="{StaticResource SegoeIconFont}" />

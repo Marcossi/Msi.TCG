@@ -1,13 +1,11 @@
-using System;
-using System.IO;
-using System.Linq;
 using Dock.Model.Controls;
 using Dock.Model.Core;
 using Dock.Model.Mvvm.Controls;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Msi.TemplateCodeGenerator.Constants;
 using Msi.TemplateCodeGenerator.Interfaces;
-using Msi.TemplateCodeGenerator.UI.TemplateEditor;
+using Msi.TemplateCodeGenerator.UI.Views.TemplateEditor.ViewModels;
 
 namespace Msi.TemplateCodeGenerator.UI.Services.Navigation;
 
@@ -16,19 +14,19 @@ namespace Msi.TemplateCodeGenerator.UI.Services.Navigation;
 /// Construye el layout del dock y expone operaciones de navegación
 /// delegando internamente en AppDockFactory.
 /// </summary>
-internal sealed class NavigationService : INavigationService
+internal sealed class NavigationService(
+    AppDockFactory factory,
+    IServiceProvider serviceProvider,
+    ILogger<NavigationService> logger) : INavigationService
 {
-    private readonly AppDockFactory _factory;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly AppDockFactory _factory = factory;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private readonly ILogger<NavigationService> _logger = logger;
     private IRootDock? _layout;
+    private readonly Dictionary<string, IServiceScope> _documentScopes = new();
 
-    public NavigationService(AppDockFactory factory, IServiceProvider serviceProvider)
-    {
-        _factory = factory;
-        _serviceProvider = serviceProvider;
-        // NO inicializamos el layout aquí para evitar bucle infinito.
-        // Se inicializa lazy cuando se solicita por primera vez.
-    }
+    // NO inicializamos el layout aquí para evitar bucle infinito.
+    // Se inicializa lazy cuando se solicita por primera vez.
 
     /// <summary>
     /// Construye e inicializa el layout del dock (lazy initialization).
@@ -53,7 +51,8 @@ internal sealed class NavigationService : INavigationService
     /// </summary>
     public void ActivateDockable(string id)
     {
-        var dockable = FindById(id);
+        _logger.LogDebug("Activando dockable '{Id}'", id);
+        IDockable? dockable = FindById(id);
         if (dockable != null)
             _factory.SetActiveDockable(dockable);
     }
@@ -63,7 +62,8 @@ internal sealed class NavigationService : INavigationService
     /// </summary>
     public void HideDockable(string id)
     {
-        var dockable = FindById(id);
+        _logger.LogDebug("Ocultando dockable '{Id}'", id);
+        IDockable? dockable = FindById(id);
         if (dockable != null)
             _factory.HideDockable(dockable);
     }
@@ -72,24 +72,29 @@ internal sealed class NavigationService : INavigationService
     /// Abre un archivo en un nuevo editor como documento (pestaña).
     /// Crea una instancia transitoria de TemplateEditorShellViewModel para cada archivo.
     /// </summary>
-    public void OpenFile(string filePath)
+    public async Task OpenFile(string filePath)
     {
         if (string.IsNullOrWhiteSpace(filePath))
             throw new ArgumentException("File path cannot be empty.", nameof(filePath));
 
+        _logger.LogInformation("Abriendo archivo '{FilePath}'", filePath);
+
         // Buscar si ya está abierto
-        var existingDoc = _factory.Find(d => d.Id == $"File_{filePath}").FirstOrDefault();
+        IEnumerable<IDockable> existingDocs = _factory.Find(d => d.Id == $"File_{filePath}");
+        IDockable? existingDoc = existingDocs.FirstOrDefault();
         if (existingDoc != null)
         {
+            _logger.LogDebug("Archivo ya abierto, activando '{FilePath}'", filePath);
             _factory.SetActiveDockable(existingDoc);
             return;
         }
 
-        // Crear nueva instancia transitoria del ViewModel
-        var editorVM = _serviceProvider.GetRequiredService<TemplateEditorShellViewModel>();
-        editorVM.LoadFile(filePath);
+        // Crear scope explícito para resolver el ViewModel Scoped
+        IServiceScope scope = _serviceProvider.CreateScope();
+        TemplateEditorShellViewModel editorVM = scope.ServiceProvider.GetRequiredService<TemplateEditorShellViewModel>();
+        await editorVM.LoadFileAsync(filePath);
 
-        var document = new Document
+        Document document = new()
         {
             Id = $"File_{filePath}",
             Title = Path.GetFileName(filePath),
@@ -97,13 +102,18 @@ internal sealed class NavigationService : INavigationService
             CanClose = true
         };
 
+        // Almacenar el scope para disposal posterior al cerrar
+        _documentScopes[document.Id] = scope;
+
         // Buscar el DocumentDock y añadir el documento
-        var documentDock = FindById(NavigationConstants.DocumentsPaneId) as IDocumentDock;
+        IDocumentDock? documentDock = FindById(NavigationConstants.DocumentsPaneId) as IDocumentDock;
         if (documentDock != null)
         {
             _factory.AddDockable(documentDock, document);
             _factory.SetActiveDockable(document);
         }
+
+        _logger.LogInformation("Archivo abierto en editor: '{FilePath}'", filePath);
     }
 
     /// <summary>
@@ -111,4 +121,62 @@ internal sealed class NavigationService : INavigationService
     /// </summary>
     private IDockable? FindById(string id)
         => _factory.Find(d => d.Id == id).FirstOrDefault();
+
+    /// <inheritdoc/>
+    public async Task<bool> CloseDocumentAsync(string documentId)
+    {
+        _logger.LogDebug("Cerrando documento '{DocumentId}'", documentId);
+
+        IDockable? dockable = FindById(documentId);
+        if (dockable == null)
+        {
+            _logger.LogWarning("Documento no encontrado '{DocumentId}'", documentId);
+            return true;  // No existe, consideramos que "cerró"
+        }
+
+        // Si el ViewModel implementa ICloseAware, consulta antes de cerrar
+        if (dockable is Document doc && doc.Context is ICloseAware closeAware)
+        {
+            if (!await closeAware.CanCloseAsync())
+            {
+                _logger.LogDebug("Cierre abortado por el usuario para '{DocumentId}'", documentId);
+                return false;  // Usuario abortó el cierre
+            }
+        }
+
+        // Procede con el cierre
+        _factory.CloseDockable(dockable);
+
+        // Disposing the scope associated with this document
+        if (_documentScopes.TryGetValue(documentId, out IServiceScope? scope))
+        {
+            scope.Dispose();
+            _documentScopes.Remove(documentId);
+            _logger.LogDebug("Scope disposed para documento '{DocumentId}'", documentId);
+        }
+
+        return true;
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> CanCloseAllAsync()
+    {
+        IEnumerable<ICloseAware> openEditors = GetOpenEditors();
+        foreach (ICloseAware editor in openEditors)
+        {
+            if (!await editor.CanCloseAsync())
+                return false;
+        }
+        return true;
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<ICloseAware> GetOpenEditors()
+    {
+        IRootDock layout = EnsureLayoutInitialized();
+        return _factory.Find(d => d is Document doc && doc.Context is ICloseAware)
+            .OfType<Document>()
+            .Select(d => (ICloseAware)d.Context!)
+            .Where(vm => vm != null);
+    }
 }

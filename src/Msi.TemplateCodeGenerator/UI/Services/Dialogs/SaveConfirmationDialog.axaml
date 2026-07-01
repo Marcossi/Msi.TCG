@@ -1,0 +1,22 @@
+<Window x:Class="Msi.TemplateCodeGenerator.UI.Services.Dialogs.SaveConfirmationDialog"
+        x:ClassModifier="internal"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Cambios sin guardar"
+        Width="420"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        ShowInTaskbar="False">
+
+    <StackPanel Spacing="20" Margin="24">
+        <TextBlock x:Name="MessageText" TextWrapping="Wrap" />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+            <Button Content="Guardar" IsDefault="True" Click="OnSave" MinWidth="80" />
+            <Button Content="No guardar" Click="OnDontSave" MinWidth="80" />
+            <Button Content="Cancelar" IsCancel="True" Click="OnCancel" MinWidth="80" />
+        </StackPanel>
+    </StackPanel>
+
+</Window>

@@ -25,7 +25,7 @@ public interface INavigationService
     void ActivateDockable(string id);
 
     /// <summary>
-    /// Oculta un panel por su ID.
+    /// Oculta un dockable por su ID.
     /// </summary>
     void HideDockable(string id);
 
@@ -33,5 +33,22 @@ public interface INavigationService
     /// Abre un archivo en un nuevo editor como documento (pestaña).
     /// </summary>
     /// <param name="filePath">Ruta del archivo a abrir.</param>
-    void OpenFile(string filePath);
+    Task OpenFile(string filePath);
+
+    /// <summary>
+    /// Cierra un documento consultando primero si puede cerrarse (si implementa ICloseAware).
+    /// </summary>
+    /// <param name="documentId">ID del documento a cerrar.</param>
+    /// <returns>true si el cierre fue exitoso; false si fue abortado.</returns>
+    Task<bool> CloseDocumentAsync(string documentId);
+
+    /// <summary>
+    /// Comprueba si todos los documentos abiertos pueden cerrarse de forma segura.
+    /// </summary>
+    Task<bool> CanCloseAllAsync();
+
+    /// <summary>
+    /// Obtiene una enumeración de todos los ViewModels de editores abiertos.
+    /// </summary>
+    IEnumerable<ICloseAware> GetOpenEditors();
 }

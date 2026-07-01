@@ -1,13 +1,12 @@
-﻿<UserControl x:Class="Msi.TemplateCodeGenerator.UI.Settings.SettingsShellView"
-             xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:Msi.TemplateCodeGenerator.UI.Settings"
+﻿<UserControl x:Class="Msi.TemplateCodeGenerator.UI.Views.Settings.SettingsShellView"
+              xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+              xmlns:local="clr-namespace:Msi.TemplateCodeGenerator.UI.Views.Settings"
              mc:Ignorable="d" 
              x:ClassModifier="internal"
              d:DesignHeight="450" d:DesignWidth="800">
-             <!--d:DataContext="{d:DesignInstance Type=local:SettingsShellViewModel, IsDesignTimeCreatable=False}"-->
     <Grid>
         <StackPanel HorizontalAlignment="Center"
                     VerticalAlignment="Center">

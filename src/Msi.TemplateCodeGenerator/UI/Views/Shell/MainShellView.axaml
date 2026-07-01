@@ -1,0 +1,46 @@
+<UserControl x:Class="Msi.TemplateCodeGenerator.UI.Views.Shell.MainShellView"
+              xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+              xmlns:local="clr-namespace:Msi.TemplateCodeGenerator.UI.Views.Shell"
+              xmlns:vm="clr-namespace:Msi.TemplateCodeGenerator.UI.Views.Shell.ViewModels"
+             xmlns:dock="clr-namespace:Dock.Avalonia.Controls;assembly=Dock.Avalonia"
+             xmlns:dockMvvm="clr-namespace:Dock.Model.Mvvm.Controls;assembly=Dock.Model.Mvvm"
+             mc:Ignorable="d"
+             x:ClassModifier="internal"
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <DockPanel>
+        <!-- Barra de menus -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_Archivo">
+                <MenuItem Header="_Nuevo Proyecto..." Command="{Binding NewProjectCommand}"/>
+                <MenuItem Header="_Abrir Proyecto..." Command="{Binding OpenProjectCommand}"/>
+                <MenuItem Header="_Cerrar Proyecto" Command="{Binding CloseProjectCommand}"/>
+                <Separator />
+                <MenuItem Header="_Guardar" Command="{Binding SaveProjectCommand}"/>
+                <MenuItem Header="Guardar _Como..." Command="{Binding SaveProjectAsCommand}"/>
+                <Separator />
+                <MenuItem Header="_Salir" Command="{Binding ExitCommand}"/>
+            </MenuItem>
+        </Menu>
+
+        <!-- Layout de paneles gestionado por Dock.Avalonia -->
+        <!-- Dock renderiza Tool/Document como tipo. Los DataTemplates aquí pasan 
+             Context (el ViewModel) a un ContentControl, que luego usa el ViewLocator
+             de App.axaml para resolver la View correspondiente. -->
+        <dock:DockControl Layout="{Binding Layout}">
+            <dock:DockControl.DataTemplates>
+                <!-- Cualquier Tool: delega en el ViewLocator via Context -->
+                <DataTemplate DataType="{x:Type dockMvvm:Tool}">
+                    <ContentControl Content="{Binding Context}" />
+                </DataTemplate>
+                <!-- Cualquier Document: delega en el ViewLocator via Context -->
+                <DataTemplate DataType="{x:Type dockMvvm:Document}">
+                    <ContentControl Content="{Binding Context}" />
+                </DataTemplate>
+            </dock:DockControl.DataTemplates>
+        </dock:DockControl>
+    </DockPanel>
+</UserControl>

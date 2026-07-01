@@ -1,13 +1,13 @@
 ﻿using System.Reflection;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Msi.TemplateCodeGenerator.UI;
+using Msi.TemplateCodeGenerator.UI.Views.Shell;
+using Msi.TemplateCodeGenerator.UI.Views.Shell.ViewModels;
 using Serilog;
 
 namespace Msi.TemplateCodeGenerator;
@@ -20,6 +20,9 @@ public partial class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+#if DEBUG
+        this.AttachDeveloperTools();
+#endif
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -28,7 +31,7 @@ public partial class App : Application
         //--------------------------------------------------------------------------------------------------------
 
         // Configurar y Construir el Host de la aplicación
-        var builder = Host.CreateApplicationBuilder();
+        HostApplicationBuilder builder = Host.CreateApplicationBuilder();
         InitializeConfiguration(builder);
         InitializeLogging(builder);
         InitializeServices(builder);
@@ -44,8 +47,6 @@ public partial class App : Application
         // En este caso sabemos que la ejecución es de escritorio clásico
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopApp)
         {
-            // Evitar validaciones duplicadas
-            Avalonia_DisableDataAnnotationValidation();
             Avalonia_CreateMainWindow(desktopApp);
         }
 
@@ -76,10 +77,11 @@ public partial class App : Application
 
     private static void LogStartupBanner(IServiceProvider services)
     {
+        ILogger<App>? logger = null;
         try
         {
-            var logger = services.GetRequiredService<ILogger<App>>();
-            var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.0";
+            logger = services.GetRequiredService<ILogger<App>>();
+            string version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.0";
             
             logger.LogInformation("""
                           -----------------------
@@ -89,30 +91,16 @@ public partial class App : Application
                           """,
                           version);
         }
-        catch
+        catch (Exception ex)
         {
-            // Si falla el log en el arranque, no queremos que la app explote, 
-            // pero es muy raro que falle si el Host se construyó bien.
-        }
-    }
-
-    private static void Avalonia_DisableDataAnnotationValidation()
-    {
-        // Get an array of plugins to remove
-        var dataValidationPluginsToRemove =
-            BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
-
-        // remove each entry found
-        foreach (var plugin in dataValidationPluginsToRemove)
-        {
-            BindingPlugins.DataValidators.Remove(plugin);
+            logger?.LogError(ex, "Error al mostrar banner de arranque");
         }
     }
 
     private void Avalonia_CreateMainWindow(IClassicDesktopStyleApplicationLifetime desktopApp)
     {
-        var mainWindow = _host.Services.GetRequiredService<MainWindow>();
-        var mainShellViewModel = _host.Services.GetRequiredService<MainShellViewModel>();
+        MainWindow mainWindow = _host.Services.GetRequiredService<MainWindow>();
+        MainShellViewModel mainShellViewModel = _host.Services.GetRequiredService<MainShellViewModel>();
 
         mainWindow.DataContext = mainShellViewModel;
         desktopApp.MainWindow = mainWindow;

@@ -1,38 +1,57 @@
 using Scriban;
 using Scriban.Parsing;
 using Scriban.Runtime;
+using Microsoft.Extensions.Logging;
 using Msi.TemplateCodeGenerator.Interfaces;
+using Msi.TemplateCodeGenerator.Models;
 
 namespace Msi.TemplateCodeGenerator.Services.Templates;
 
-public class TemplatesService : ITemplatesService
+internal sealed class TemplatesService(ILogger<TemplatesService> logger) : ITemplatesService
 {
+    private readonly ILogger<TemplatesService> _logger = logger;
     public async Task<TemplateResult> ProcessTemplateAsync(string templateContent)
     {
         if (string.IsNullOrWhiteSpace(templateContent))
         {
+            _logger.LogDebug("ProcessTemplateAsync: contenido vacÃ­o, retornando Ã©xito");
             return TemplateResult.Success(string.Empty);
         }
+
+        _logger.LogDebug("Procesando plantilla ({CharCount} chars)", templateContent.Length);
 
         try
         {
             // 1. Parsear y validar la plantilla
-            var parseResult = ParseTemplate(templateContent);
+            (bool IsSuccess, Template? Template, TemplateResult ErrorResult) parseResult = ParseTemplate(templateContent);
             if (!parseResult.IsSuccess)
+            {
+                _logger.LogWarning(parseResult.ErrorResult.ErrorMessage, "Errores de sintaxis al parsear plantilla");
                 return parseResult.ErrorResult;
+            }
 
-            var template = parseResult.Template!;
+            Template template = parseResult.Template!;
 
             // 2. Obtener el modelo de datos (Dummy por ahora)
-            var model = GetDummyModel();
+            object model = GetDummyModel();
 
             // 3. Renderizar la plantilla con el modelo
-            var renderResult = await RenderTemplateAsync(template, model);
-            
+            TemplateResult renderResult = await RenderTemplateAsync(template, model);
+
+            if (renderResult.IsSuccess)
+            {
+                _logger.LogDebug("Plantilla renderizada exitosamente ({ResultLen} chars)", renderResult.Result?.Length ?? 0);
+            }
+            else
+            {
+                _logger.LogWarning(renderResult.ErrorMessage, "Error al renderizar plantilla");
+            }
+
             return renderResult;
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error inesperado al procesar la plantilla");
             // Cualquier otro error inesperado a nivel general
             return TemplateResult.Failure($"Error inesperado al procesar la plantilla:\n{ex.Message}");
         }
@@ -43,30 +62,34 @@ public class TemplatesService : ITemplatesService
     /// </summary>
     private (bool IsSuccess, Template? Template, TemplateResult ErrorResult) ParseTemplate(string templateContent)
     {
+        _logger.LogDebug("Parseando plantilla ({CharCount} chars)", templateContent.Length);
+
         // Opciones de parseo personalizadas
-        var parserOptions = new ParserOptions
+        ParserOptions parserOptions = new()
         {
-            // Aquí podremos añadir opciones en el futuro, por ejemplo:
+            // Aquï¿½ podremos aï¿½adir opciones en el futuro, por ejemplo:
             // ExpressionDepthLimit = 100,
             // LiquidTagOnly = false
         };
 
-        var lexerOptions = new LexerOptions
+        LexerOptions lexerOptions = new()
         {
-            // Opciones del analizador léxico
+            // Opciones del analizador lï¿½xico
             // Mode = ScriptMode.Default
         };
 
         // Compilamos el string a un AST interno (Abstract Syntax Tree).
-        var template = Template.Parse(templateContent, sourceFilePath: null, parserOptions, lexerOptions);
+        Template template = Template.Parse(templateContent, sourceFilePath: null, parserOptions, lexerOptions);
 
         // Comprobamos errores de sintaxis
         if (template.HasErrors)
         {
-            var errors = string.Join(Environment.NewLine, template.Messages.Select(m => m.ToString()));
+            string errors = string.Join(Environment.NewLine, template.Messages.Select(m => m.ToString()));
+            _logger.LogDebug("Errores de sintaxis detectados: {Errors}", errors);
             return (false, null, TemplateResult.Failure($"Errores de sintaxis en la plantilla:\n{errors}"));
         }
 
+        _logger.LogDebug("Plantilla parseada exitosamente");
         return (true, template, null!);
     }
 
@@ -77,35 +100,40 @@ public class TemplatesService : ITemplatesService
     {
         try
         {
-            var context = new Scriban.TemplateContext();
+            _logger.LogDebug("Renderizando plantilla con modelo de tipo '{ModelType}'", model.GetType().Name);
+
+            TemplateContext context = new();
             
             // IMPORTANTE 1: Mantener nombres originales (PascalCase en lugar de snake_case)
             context.MemberRenamer = member => member.Name; 
             
             // IMPORTANTE 2: Permitir acceso a miembros en objetos CLR anidados devueltos
-            // por métodos (p. ej. propiedades de DummyElement retornado por GetElementByName).
+            // por mï¿½todos (p. ej. propiedades de DummyElement retornado por GetElementByName).
             context.MemberFilter = member => true;
             
-            // Construimos un ScriptObject que expone tanto propiedades como métodos de
-            // instancia del modelo. Scriban solo registra métodos estáticos al usar
-            // Import(tipo); los métodos de instancia deben añadirse como delegados Func<>.
-            var scriptObject = new ScriptObject();
+            // Construimos un ScriptObject que expone tanto propiedades como mï¿½todos de
+            // instancia del modelo. Scriban solo registra mï¿½todos estï¿½ticos al usar
+            // Import(tipo); los mï¿½todos de instancia deben aï¿½adirse como delegados Func<>.
+            ScriptObject scriptObject = new();
             scriptObject.Add("Model", BuildScriptObject(model));
             
             context.PushGlobal(scriptObject);
 
             // Evaluar el AST con el contexto configurado
-            var result = await template.RenderAsync(context);
+            string result = await template.RenderAsync(context);
 
+            _logger.LogDebug("Renderizado completado ({ResultLen} chars)", result.Length);
             return TemplateResult.Success(result);
         }
         catch (Scriban.Syntax.ScriptRuntimeException ex)
         {
-            // Errores de ejecución (ej. intentar acceder a una propiedad que no existe en el modelo)
-            return TemplateResult.Failure($"Error de ejecución en la plantilla:\n{ex.Message}");
+            _logger.LogWarning(ex, "Error de ejecuciï¿½n en la plantilla");
+            // Errores de ejecuciï¿½n (ej. intentar acceder a una propiedad que no existe en el modelo)
+            return TemplateResult.Failure($"Error de ejecuciï¿½n en la plantilla:\n{ex.Message}");
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error inesperado al renderizar la plantilla");
             // Cualquier otro error inesperado durante el renderizado
             return TemplateResult.Failure($"Error inesperado al renderizar la plantilla:\n{ex.Message}");
         }
@@ -113,19 +141,19 @@ public class TemplatesService : ITemplatesService
 
     /// <summary>
     /// Construye un ScriptObject a partir de un objeto CLR, exponiendo sus propiedades
-    /// de instancia y registrando explícitamente los métodos requeridos.
+    /// de instancia y registrando explï¿½citamente los mï¿½todos requeridos.
     /// </summary>
     private static ScriptObject BuildScriptObject(object model)
     {
         //return model as ScriptObject;
-        var scriptObject = new ScriptObject();
+        ScriptObject scriptObject = new();
 
         // Importar propiedades de instancia con nombres originales (PascalCase).
-        // Import(instancia) en Scriban solo expone propiedades, nunca métodos.
+        // Import(instancia) en Scriban solo expone propiedades, nunca mï¿½todos.
         scriptObject.Import(model, renamer: m => m.Name);
         scriptObject.Add("this", model);
 
-        // Registramos el método Test que ahora recibe el modelo como parámetro
+        // Registramos el mï¿½todo Test que ahora recibe el modelo como parï¿½metro
         scriptObject.Import(nameof(DummyTemplateModel.Test), DummyTemplateModel.Test);
 
         //scriptObject.Import(typeof(DummyTemplateModel));
@@ -163,7 +191,7 @@ public class TemplatesService : ITemplatesService
                     Id = "E002",
                     Name = "Product", 
                     BaseClass = null,
-                    Description = "Representa un producto en el catálogo",
+                    Description = "Representa un producto en el catï¿½logo",
                     Fields = new List<DummyField>
                     {
                         new DummyField { Name = "Id", Type = "Guid", Accessibility = "public" },
@@ -173,36 +201,5 @@ public class TemplatesService : ITemplatesService
                 }
             }
         };
-    }
-
-    // Clases Dummy para el modelo de datos
-    public class DummyTemplateModel
-    {
-        public string ProjectName { get; set; } = string.Empty;
-        public string Author { get; set; } = string.Empty;
-        public List<DummyElement> Elements { get; set; } = new();
-
-        // Método estático invocable desde Scriban que recibe el modelo
-        public static string Test(ScriptObject model)
-        {
-            var @this = (DummyTemplateModel)model["this"];
-            return $"soy el metodo Test() ejecutado sobre el proyecto: {@this.ProjectName}";
-        }
-    }
-
-    public class DummyElement
-    {
-        public string Id { get; set; } = string.Empty;
-        public string Name { get; set; } = string.Empty;
-        public string? BaseClass { get; set; }
-        public string Description { get; set; } = string.Empty;
-        public List<DummyField> Fields { get; set; } = new();
-    }
-
-    public class DummyField
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Type { get; set; } = string.Empty;
-        public string Accessibility { get; set; } = "private";
     }
 }

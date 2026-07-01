@@ -1,26 +1,26 @@
-<UserControl x:Class="Msi.TemplateCodeGenerator.UI.TemplateEditor.TemplateEditorShellView"
-             x:ClassModifier="internal"
-             xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:Msi.TemplateCodeGenerator.UI.TemplateEditor"
+<UserControl x:Class="Msi.TemplateCodeGenerator.UI.Views.TemplateEditor.TemplateEditorShellView"
+              x:ClassModifier="internal"
+              xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+              xmlns:local="clr-namespace:Msi.TemplateCodeGenerator.UI.Views.TemplateEditor"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 
     <Grid ColumnDefinitions="*, 4, *">
         <!-- Editor (Izquierda) -->
         <TextBox Grid.Column="0"
-                    Text="{Binding TemplateContent}"
+                    Text="{Binding Content}"
                     AcceptsReturn="True"
                     AcceptsTab="True"
                     FontFamily="Consolas, Monospace, Courier New"
                     VerticalContentAlignment="Top"
-                    Watermark="Escribe tu plantilla Scriban aquí..."
+                    PlaceholderText="Escribe tu plantilla Scriban aquí..."
                     BorderThickness="1"
                     BorderBrush="#CCCCCC"
                     CornerRadius="0"/>			
-
+        
         <!-- Splitter -->
         <GridSplitter Grid.Column="1" 
                       ResizeDirection="Columns" 
@@ -33,7 +33,7 @@
                  AcceptsReturn="True"
                  FontFamily="Consolas, Monospace, Courier New"
                  VerticalContentAlignment="Top"
-                 Watermark="Vista previa en tiempo real..."
+                 PlaceholderText="Vista previa en tiempo real..."
                  BorderThickness="1"
                  BorderBrush="#CCCCCC"
                  CornerRadius="0"/>
