@@ -17,7 +17,7 @@ internal abstract partial class BaseTextEditorViewModel(
     IFileService fileService,
     IDialogService dialogService,
     ILogger<BaseTextEditorViewModel> logger)
-    : BaseViewModel, ICloseAware
+    : BaseViewModel, ICloseAware, ICommandRoute
 {
     private readonly ILogger<BaseTextEditorViewModel> _logger = logger;
     [ObservableProperty]
@@ -153,6 +153,24 @@ internal abstract partial class BaseTextEditorViewModel(
         catch
         {
             return false;
+        }
+    }
+
+    public bool CanExecute(string commandName) => commandName switch
+    {
+        "Save" => CanSave(),
+        _ => false
+    };
+
+    public async Task ExecuteAsync(string commandName)
+    {
+        switch (commandName)
+        {
+            case "Save":
+                await SaveAsync();
+                break;
+            default:
+                throw new InvalidOperationException($"Comando no soportado: {commandName}");
         }
     }
 }

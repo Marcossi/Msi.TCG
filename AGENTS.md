@@ -10,6 +10,8 @@ Architecture docs live in `.agents/` (layered). Load only the minimum layer need
    - `modelo-de-proyecto.md` — estructura conceptual .scribanproj, secciones recursivas
    - `services/` — detalles de ProjectService, TemplatesService, FileService
    - `screens/` — detalles de MainShell, TemplateEditor, ProjectExplorer, Settings
+   - `adr/` — Architecture Decision Records (consultar `adr/README.md` antes de cambios estructurales)
+   - `especificaciones/` — especificaciones técnicas de componentes
 2. `.agents/msi-guidelines-avalonia/` — Avalonia MVVM, bootstrap, shell, navigation rules
    - `msi-arquitectura-mvvm.md` — estructura de Screens, reglas MVVM, antipatrones, audit trail
    - `msi-bootstrap-avalonia.md` — arranque, builders, IApp (opcional)

@@ -5,11 +5,15 @@
               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
               xmlns:local="clr-namespace:Msi.TemplateCodeGenerator.UI.Views.Shell"
               xmlns:vm="clr-namespace:Msi.TemplateCodeGenerator.UI.Views.Shell.ViewModels"
-             xmlns:dock="clr-namespace:Dock.Avalonia.Controls;assembly=Dock.Avalonia"
-             xmlns:dockMvvm="clr-namespace:Dock.Model.Mvvm.Controls;assembly=Dock.Model.Mvvm"
-             mc:Ignorable="d"
-             x:ClassModifier="internal"
-             d:DesignHeight="450" d:DesignWidth="800">
+              xmlns:dock="clr-namespace:Dock.Avalonia.Controls;assembly=Dock.Avalonia"
+              xmlns:dockMvvm="clr-namespace:Dock.Model.Mvvm.Controls;assembly=Dock.Model.Mvvm"
+              mc:Ignorable="d"
+              x:ClassModifier="internal"
+              d:DesignHeight="450" d:DesignWidth="800">
+
+    <UserControl.KeyBindings>
+        <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveCommand}"/>
+    </UserControl.KeyBindings>
 
     <DockPanel>
         <!-- Barra de menus -->
@@ -19,7 +23,7 @@
                 <MenuItem Header="_Abrir Proyecto..." Command="{Binding OpenProjectCommand}"/>
                 <MenuItem Header="_Cerrar Proyecto" Command="{Binding CloseProjectCommand}"/>
                 <Separator />
-                <MenuItem Header="_Guardar" Command="{Binding SaveProjectCommand}"/>
+                <MenuItem Header="_Guardar" Command="{Binding SaveCommand}" InputGesture="Ctrl+S"/>
                 <MenuItem Header="Guardar _Como..." Command="{Binding SaveProjectAsCommand}"/>
                 <Separator />
                 <MenuItem Header="_Salir" Command="{Binding ExitCommand}"/>

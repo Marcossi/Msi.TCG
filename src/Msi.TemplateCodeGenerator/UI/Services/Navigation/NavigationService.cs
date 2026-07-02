@@ -17,8 +17,11 @@ namespace Msi.TemplateCodeGenerator.UI.Services.Navigation;
 internal sealed class NavigationService(
     AppDockFactory factory,
     IServiceProvider serviceProvider,
-    ILogger<NavigationService> logger) : INavigationService
+    ILogger<NavigationService> logger) : INavigationService, ICommandContext
 {
+    private ICommandRoute? _activeRoute;
+
+    public ICommandRoute? ActiveRoute => _activeRoute;
     private readonly AppDockFactory _factory = factory;
     private readonly IServiceProvider _serviceProvider = serviceProvider;
     private readonly ILogger<NavigationService> _logger = logger;
@@ -54,7 +57,19 @@ internal sealed class NavigationService(
         _logger.LogDebug("Activando dockable '{Id}'", id);
         IDockable? dockable = FindById(id);
         if (dockable != null)
+        {
             _factory.SetActiveDockable(dockable);
+            OnActiveDockableChanged(dockable);
+        }
+    }
+
+    /// <summary>
+    /// Actualiza el contexto de comandos activos cuando cambia el dockable seleccionado.
+    /// </summary>
+    private void OnActiveDockableChanged(IDockable? dockable)
+    {
+        _activeRoute = dockable?.Context as ICommandRoute;
+        _logger.LogDebug("ActiveRoute actualizado: {ActiveRoute}", _activeRoute?.GetType().Name ?? "null");
     }
 
     /// <summary>
@@ -86,6 +101,7 @@ internal sealed class NavigationService(
         {
             _logger.LogDebug("Archivo ya abierto, activando '{FilePath}'", filePath);
             _factory.SetActiveDockable(existingDoc);
+            OnActiveDockableChanged(existingDoc);
             return;
         }
 
@@ -111,6 +127,7 @@ internal sealed class NavigationService(
         {
             _factory.AddDockable(documentDock, document);
             _factory.SetActiveDockable(document);
+            OnActiveDockableChanged(document);
         }
 
         _logger.LogInformation("Archivo abierto en editor: '{FilePath}'", filePath);
@@ -146,6 +163,11 @@ internal sealed class NavigationService(
 
         // Procede con el cierre
         _factory.CloseDockable(dockable);
+
+        if (dockable is Document activeDoc && activeDoc.Context == _activeRoute)
+        {
+            _activeRoute = null;
+        }
 
         // Disposing the scope associated with this document
         if (_documentScopes.TryGetValue(documentId, out IServiceScope? scope))

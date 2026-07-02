@@ -4,6 +4,7 @@ using Dock.Model.Controls;
 using Microsoft.Extensions.Logging;
 using Msi.TemplateCodeGenerator.Constants;
 using Msi.TemplateCodeGenerator.Interfaces;
+using Msi.TemplateCodeGenerator.UI.Services.Commands;
 using Msi.TemplateCodeGenerator.UI.Shared;
 
 namespace Msi.TemplateCodeGenerator.UI.Views.Shell.ViewModels;
@@ -17,6 +18,7 @@ internal partial class MainShellViewModel : BaseViewModel
 {
     private readonly IProjectService _projectService;
     private readonly IFileDialogService _fileDialogService;
+    private readonly ICommandRegistry _commandRegistry;
     private readonly ILogger<MainShellViewModel> _logger;
 
     ///      XAML                    ViewModel
@@ -37,10 +39,12 @@ internal partial class MainShellViewModel : BaseViewModel
         INavigationService navigationService,
         IProjectService projectService,
         IFileDialogService fileDialogService,
+        ICommandRegistry commandRegistry,
         ILogger<MainShellViewModel> logger)
     {
         _projectService = projectService;
         _fileDialogService = fileDialogService;
+        _commandRegistry = commandRegistry;
         _logger = logger;
         _layout = navigationService.GetLayout();
     }
@@ -171,4 +175,29 @@ internal partial class MainShellViewModel : BaseViewModel
     {
         _logger.LogInformation("[UI] Command: Exit");
     }
+
+    /// <summary>
+    /// Guarda el contexto activo (editor de archivos).
+    /// Delega en ICommandRegistry para resolver el comando contextual.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanSave))]
+    private async Task SaveAsync()
+    {
+        _logger.LogInformation("[UI] Command: Save (contextual)");
+        try
+        {
+            bool executed = await _commandRegistry.ExecuteAsync("Save");
+            if (!executed)
+            {
+                _logger.LogDebug("No se pudo ejecutar Save contextual (sin editor activo o sin cambios)");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[UI] Error executing Save (contextual)");
+            StatusMessage = $"Error: {ex.Message}";
+        }
+    }
+
+    private bool CanSave() => _commandRegistry.CanExecute("Save");
 }

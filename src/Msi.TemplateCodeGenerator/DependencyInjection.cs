@@ -4,6 +4,7 @@ using Msi.TemplateCodeGenerator.Interfaces;
 using Msi.TemplateCodeGenerator.Services.Project;
 using Msi.TemplateCodeGenerator.Services.Templates;
 using Msi.TemplateCodeGenerator.Services;
+using Msi.TemplateCodeGenerator.UI.Services.Commands;
 using Msi.TemplateCodeGenerator.UI.Services.Dialogs;
 using Msi.TemplateCodeGenerator.UI.Services.Navigation;
 using Msi.TemplateCodeGenerator.UI.Views.ProjectExplorer.ViewModels;
@@ -36,7 +37,9 @@ public static class DependencyInjection
 
         // Registrar dock: AppDockFactory (interna) + INavigationService (pública)
         services.AddSingleton<AppDockFactory>();
-        services.AddSingleton<INavigationService, NavigationService>();
+        services.AddSingleton<NavigationService>();
+        services.AddSingleton<INavigationService>(sp => sp.GetRequiredService<NavigationService>());
+        services.AddSingleton<ICommandContext>(sp => sp.GetRequiredService<NavigationService>());
 
         // Registrar Dock: tipos de Tools
         services.AddSingleton<ProjectExplorerShellViewModel>();
@@ -60,6 +63,9 @@ public static class DependencyInjection
         services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton<IFileDialogService, FileDialogService>();
         services.AddSingleton<ITemplatesService, TemplatesService>();
+
+        // Registrar CommandRegistry
+        services.AddSingleton<ICommandRegistry, CommandRegistry>();
 
         return services;
     }
