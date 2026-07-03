@@ -1,0 +1,12 @@
+{
+  "header": {
+    "version": 1,
+    "category": "Element"
+  },
+  "data": {
+    "GenerateSerialization": true,
+    "GenerateDto": true,
+    "GeneratePersistence": true,
+    "GenerateValidation": true
+  }
+}

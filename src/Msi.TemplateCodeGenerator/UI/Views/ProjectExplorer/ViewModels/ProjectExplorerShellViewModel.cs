@@ -37,13 +37,10 @@ internal partial class ProjectExplorerShellViewModel : BaseViewModel, IDisposabl
 
     partial void OnSelectedFileEntryChanged(object? value)
     {
-        if (value is FileEntryViewModel entry && entry.Type == FileType.Script)
+        if (value is FileEntryViewModel entry)
         {
-            string absolutePath = Path.Combine(
-                _projectContext.CurrentProject!.FolderPath,
-                entry.RelativePath.Replace('/', Path.DirectorySeparatorChar));
-
-            _navigationService.OpenFile(absolutePath);
+            _logger.LogInformation("[UI] FileEntry seleccionado: '{Name}' (Type={Type})",
+                entry.Name, entry.Type);
         }
     }
 
@@ -143,6 +140,37 @@ internal partial class ProjectExplorerShellViewModel : BaseViewModel, IDisposabl
             projectRoot.Children.Add(root);
 
         return new ObservableCollection<FileEntryViewModel> { projectRoot };
+    }
+
+    /// <summary>
+    /// Abre el fichero representado por la entrada en el editor correspondiente.
+    /// Invocado por doble-click en el TreeView. Delega la resolución del editor en NavigationService.
+    /// </summary>
+    [RelayCommand]
+    private async Task OpenFile(FileEntryViewModel? entry)
+    {
+        if (entry == null)
+        {
+            _logger.LogDebug("OpenFile invocado con entry null");
+            return;
+        }
+
+        _logger.LogInformation("[UI] Command: OpenFile '{Name}' (Type={Type}, Path={Path})",
+            entry.Name, entry.Type, entry.RelativePath);
+
+        if (entry.Type == FileType.Directory || entry.Type == FileType.Project)
+        {
+            _logger.LogDebug("Item no editable ignorado: '{Name}' (Type={Type})", entry.Name, entry.Type);
+            return;
+        }
+
+        string absolutePath = Path.Combine(
+            _projectContext.CurrentProject!.FolderPath,
+            entry.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+
+        _logger.LogDebug("Invocando NavigationService.OpenFile('{AbsolutePath}')", absolutePath);
+        await _navigationService.OpenFile(absolutePath);
+        _logger.LogInformation("[UI] Archivo abierto en editor: '{Path}'", entry.RelativePath);
     }
 
     /// <summary>

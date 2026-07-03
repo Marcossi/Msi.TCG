@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Msi.TemplateCodeGenerator.Constants;
 using Msi.TemplateCodeGenerator.Interfaces;
+using Msi.TemplateCodeGenerator.UI.Shared;
+using Msi.TemplateCodeGenerator.UI.Views.MetadataEditor.ViewModels;
 using Msi.TemplateCodeGenerator.UI.Views.TemplateEditor.ViewModels;
 
 namespace Msi.TemplateCodeGenerator.UI.Services.Navigation;
@@ -92,7 +94,7 @@ internal sealed class NavigationService(
         if (string.IsNullOrWhiteSpace(filePath))
             throw new ArgumentException("File path cannot be empty.", nameof(filePath));
 
-        _logger.LogInformation("Abriendo archivo '{FilePath}'", filePath);
+        _logger.LogInformation("[UI] NavigationService: OpenFile '{FilePath}'", filePath);
 
         // Buscar si ya está abierto
         IEnumerable<IDockable> existingDocs = _factory.Find(d => d.Id == $"File_{filePath}");
@@ -107,8 +109,10 @@ internal sealed class NavigationService(
 
         // Crear scope explícito para resolver el ViewModel Scoped
         IServiceScope scope = _serviceProvider.CreateScope();
-        TemplateEditorShellViewModel editorVM = scope.ServiceProvider.GetRequiredService<TemplateEditorShellViewModel>();
-        await editorVM.LoadFileAsync(filePath);
+        BaseViewModel editorVM = ResolveEditor(scope, filePath);
+        _logger.LogDebug("Editor resuelto: {EditorType} para '{FilePath}'", editorVM.GetType().Name, filePath);
+
+        await LoadEditorFileAsync(editorVM, filePath);
 
         Document document = new()
         {
@@ -130,7 +134,49 @@ internal sealed class NavigationService(
             OnActiveDockableChanged(document);
         }
 
-        _logger.LogInformation("Archivo abierto en editor: '{FilePath}'", filePath);
+        _logger.LogInformation("[UI] Archivo abierto en editor: '{FilePath}' (Editor={EditorType})",
+            filePath, editorVM.GetType().Name);
+    }
+
+    /// <summary>
+    /// Resuelve el editor adecuado según la extensión del archivo.
+    /// </summary>
+    private BaseViewModel ResolveEditor(IServiceScope scope, string filePath)
+    {
+        string extension = Path.GetExtension(filePath).ToLowerInvariant();
+
+        BaseViewModel editor = extension switch
+        {
+            ".json" when IsMetadataFile(filePath)
+                => scope.ServiceProvider.GetRequiredService<MetadataEditorShellViewModel>(),
+            _ => scope.ServiceProvider.GetRequiredService<TemplateEditorShellViewModel>()
+        };
+
+        _logger.LogDebug("Editor resuelto para extensión '{Extension}': {EditorType}",
+            extension, editor.GetType().Name);
+
+        return editor;
+    }
+
+    /// <summary>
+    /// Determina si un fichero es un metadata JSON comprobando si está dentro de la carpeta metadata/.
+    /// </summary>
+    private static bool IsMetadataFile(string filePath)
+    {
+        string normalized = filePath.Replace('\\', Path.DirectorySeparatorChar);
+        string metadataSegment = $"{Path.DirectorySeparatorChar}metadata{Path.DirectorySeparatorChar}";
+        return normalized.Contains(metadataSegment, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Carga el fichero en el editor. Soporta tanto BaseTextEditorViewModel como subclases.
+    /// </summary>
+    private static async Task LoadEditorFileAsync(BaseViewModel editorVM, string filePath)
+    {
+        if (editorVM is UI.Views.TemplateEditor.ViewModels.BaseTextEditorViewModel textEditor)
+        {
+            await textEditor.LoadFileAsync(filePath);
+        }
     }
 
     /// <summary>

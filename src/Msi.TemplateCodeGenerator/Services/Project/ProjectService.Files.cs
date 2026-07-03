@@ -45,10 +45,26 @@ internal sealed partial class ProjectService
         if (entry is DirectoryInfo)
             return FileType.Directory;
 
-        if (entry is FileInfo file &&
-            file.Extension.Equals(ProjectConstants.TemplateFileExtension, StringComparison.OrdinalIgnoreCase))
-            return FileType.Script;
+        if (entry is FileInfo file)
+        {
+            if (file.Extension.Equals(ProjectConstants.TemplateFileExtension, StringComparison.OrdinalIgnoreCase))
+                return FileType.Script;
+
+            if (file.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase) &&
+                IsInMetadataFolder(file.FullName))
+                return FileType.Metadata;
+        }
 
         return FileType.Other;
+    }
+
+    /// <summary>
+    /// Determina si una ruta absoluta se encuentra dentro de la carpeta metadata/.
+    /// </summary>
+    private static bool IsInMetadataFolder(string fullPath)
+    {
+        string normalized = fullPath.Replace('\\', Path.DirectorySeparatorChar);
+        string segment = $"{Path.DirectorySeparatorChar}metadata{Path.DirectorySeparatorChar}";
+        return normalized.Contains(segment, StringComparison.OrdinalIgnoreCase);
     }
 }

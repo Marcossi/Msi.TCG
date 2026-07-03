@@ -7,6 +7,7 @@ using Msi.TemplateCodeGenerator.Services;
 using Msi.TemplateCodeGenerator.UI.Services.Commands;
 using Msi.TemplateCodeGenerator.UI.Services.Dialogs;
 using Msi.TemplateCodeGenerator.UI.Services.Navigation;
+using Msi.TemplateCodeGenerator.UI.Views.MetadataEditor.ViewModels;
 using Msi.TemplateCodeGenerator.UI.Views.ProjectExplorer.ViewModels;
 using Msi.TemplateCodeGenerator.UI.Views.Settings.ViewModels;
 using Msi.TemplateCodeGenerator.UI.Views.Shell;
@@ -46,6 +47,7 @@ public static class DependencyInjection
 
         // Registrar Dock: tipos de Document
         services.AddScoped<TemplateEditorShellViewModel>();
+        services.AddScoped<MetadataEditorShellViewModel>();
 
         //---------
         // Dominio

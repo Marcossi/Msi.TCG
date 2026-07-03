@@ -2,6 +2,8 @@ using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Msi.TemplateCodeGenerator.UI.Shared;
+using Msi.TemplateCodeGenerator.UI.Views.MetadataEditor;
+using Msi.TemplateCodeGenerator.UI.Views.MetadataEditor.ViewModels;
 using Msi.TemplateCodeGenerator.UI.Views.ProjectExplorer;
 using Msi.TemplateCodeGenerator.UI.Views.ProjectExplorer.ViewModels;
 using Msi.TemplateCodeGenerator.UI.Views.Shell;
@@ -29,6 +31,7 @@ public class ViewLocator : IDataTemplate
         {
             case MainShellViewModel: return new UI.Views.Shell.MainShellView();
             case TemplateEditorShellViewModel: return new UI.Views.TemplateEditor.TemplateEditorShellView();
+            case MetadataEditorShellViewModel: return new MetadataEditorShellView();
             case ProjectExplorerShellViewModel: return new UI.Views.ProjectExplorer.ProjectExplorerShellView();
 
             default:

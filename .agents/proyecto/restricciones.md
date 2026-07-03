@@ -140,6 +140,51 @@ Todos los ViewModels heredan de `BaseViewModel`, que a su vez hereda de `Observa
 
 ## Restricciones de arquitectura
 
+### Capa de comandos (Command Routing)
+
+Los comandos del Shell se dividen en dos categorías:
+
+1. **Comandos globales**: Operan sobre la aplicación o el proyecto (abrir, cerrar, nuevo proyecto, salir). Invocan servicios directamente.
+2. **Comandos contextuales**: Operan sobre el documento/tool activo (guardar archivo, copiar, pegar). **Deben** usar `ICommandRegistry` para resolver el comando en el ViewModel activo.
+
+**Regla:** Prohibido que el Shell invoque servicios de dominio directamente para comandos contextuales. El flujo obligatorio es:
+
+```
+Shell → ICommandRegistry → ICommandContext.ActiveRoute → ICommandRoute.ExecuteAsync() → Servicio
+```
+
+**Ejemplo correcto (Save contextual):**
+```csharp
+[RelayCommand(CanExecute = nameof(CanSave))]
+private async Task SaveAsync()
+{
+    _logger.LogInformation("[UI] Command: Save (contextual)");
+    await _commandRegistry.ExecuteAsync("Save");
+}
+```
+
+**Ejemplo incorrecto (Shell acoplado al editor):**
+```csharp
+[RelayCommand]
+private async Task SaveAsync()
+{
+    // INCORRECTO: El Shell no debe conocer IFileService ni el editor activo
+    await _fileService.WriteTextAsync(editorVm.FilePath, editorVm.Content);
+}
+```
+
+**Excepción:** Los comandos globales del Shell pueden invocar servicios directamente:
+```csharp
+[RelayCommand]
+private async Task OpenProjectAsync()
+{
+    // CORRECTO: OpenProject es un comando global, no contextual
+    await _projectService.OpenProjectAsync(path);
+}
+```
+
+Ver `especificaciones/command-routing.md` para detalles de implementación.
+
 ### Separación de Contexto vs Servicio
 
 - **`IProjectContext`** (Estado):

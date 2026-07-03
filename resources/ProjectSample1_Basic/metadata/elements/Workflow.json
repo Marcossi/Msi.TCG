@@ -1,0 +1,117 @@
+{
+  "header": {
+    "version": 1,
+    "category": "Element",
+    "defaults": "_defaults.json"
+  },
+  "data": {
+    "Id": "Workflow",
+    "Name": "Workflow",
+    "NameLower": "workflow",
+    "ClassName": "Workflow",
+    "Description": "Define un flujo de trabajo automatizado con pasos secuenciales",
+    "GenerateSerialization": true,
+    "GenerateDto": true,
+    "GeneratePersistence": true,
+    "GenerateValidation": true,
+    "Properties": [
+      {
+        "Name": "Name",
+        "NameLower": "name",
+        "Type": "string",
+        "Description": "Nombre del workflow",
+        "Accessibility": "public",
+        "IsReadOnly": false,
+        "IsNullable": false,
+        "SerializationToken": "wfName",
+        "SerializeAsReference": false,
+        "SerializationFormat": "",
+        "DefaultValue": "string.Empty",
+        "InitializationMode": "default",
+        "CopyMode": "shallow",
+        "IsRequired": true,
+        "ValidationRules": "MaxLength(100)"
+      },
+      {
+        "Name": "Status",
+        "NameLower": "status",
+        "Type": "WorkflowStatus",
+        "Description": "Estado actual del workflow",
+        "Accessibility": "public",
+        "IsReadOnly": false,
+        "IsNullable": false,
+        "SerializationToken": "wfStatus",
+        "SerializeAsReference": false,
+        "SerializationFormat": "enum-string",
+        "DefaultValue": "WorkflowStatus.Draft",
+        "InitializationMode": "default",
+        "CopyMode": "shallow",
+        "IsRequired": true,
+        "ValidationRules": ""
+      },
+      {
+        "Name": "CreatedAt",
+        "NameLower": "createdAt",
+        "Type": "DateTime",
+        "Description": "Fecha de creación del workflow",
+        "Accessibility": "public",
+        "IsReadOnly": true,
+        "IsNullable": false,
+        "SerializationToken": "wfCreatedAt",
+        "SerializeAsReference": false,
+        "SerializationFormat": "iso8601",
+        "DefaultValue": "DateTime.UtcNow",
+        "InitializationMode": "eager",
+        "CopyMode": "shallow",
+        "IsRequired": true,
+        "ValidationRules": ""
+      }
+    ],
+    "SubElements": [
+      {
+        "Id": "WorkflowStep",
+        "Name": "WorkflowStep",
+        "NameLower": "workflowStep",
+        "Description": "Paso individual del workflow",
+        "RelationType": "composition",
+        "IsCollection": true,
+        "Properties": [
+          {
+            "Name": "Order",
+            "NameLower": "order",
+            "Type": "int",
+            "Description": "Orden de ejecución del paso",
+            "Accessibility": "public",
+            "IsReadOnly": false,
+            "IsNullable": false,
+            "SerializationToken": "stepOrder",
+            "SerializeAsReference": false,
+            "SerializationFormat": "",
+            "DefaultValue": "0",
+            "InitializationMode": "default",
+            "CopyMode": "shallow",
+            "IsRequired": true,
+            "ValidationRules": "Range(0, 1000)"
+          },
+          {
+            "Name": "Action",
+            "NameLower": "action",
+            "Type": "string",
+            "Description": "Acción a ejecutar en este paso",
+            "Accessibility": "public",
+            "IsReadOnly": false,
+            "IsNullable": false,
+            "SerializationToken": "stepAction",
+            "SerializeAsReference": false,
+            "SerializationFormat": "",
+            "DefaultValue": "string.Empty",
+            "InitializationMode": "default",
+            "CopyMode": "shallow",
+            "IsRequired": true,
+            "ValidationRules": "MaxLength(200)"
+          }
+        ]
+      }
+    ]
+  }
+}

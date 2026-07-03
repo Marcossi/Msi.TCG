@@ -88,7 +88,7 @@ Regla de separación: Los servicios se inyectan, el contexto se inyecta (pero so
 
 ## Flujo de trabajo
 
-### Abrir proyecto
+### Abrir proyecto (comando global)
 
 1. Usuario hace clic en "Abrir Proyecto"
 2. `MainShellViewModel.OpenProjectAsync(path)`
@@ -99,7 +99,9 @@ Regla de separación: Los servicios se inyectan, el contexto se inyecta (pero so
    d. Envía `ProjectOpenedMessage`
 4. ViewModels reciben mensaje y refrescan UI
 
-### Cerrar proyecto
+**Nota:** Los comandos globales del Shell (abrir, cerrar, nuevo proyecto) invocan servicios directamente, sin pasar por `ICommandRegistry`.
+
+### Cerrar proyecto (comando global)
 
 1. Usuario hace clic en "Cerrar Proyecto"
 2. `MainShellViewModel.CloseProjectAsync()`
@@ -109,6 +111,21 @@ Regla de separación: Los servicios se inyectan, el contexto se inyecta (pero so
    c. Envía `ProjectClosedMessage`
 4. ViewModels reciben mensaje y limpian UI
 
+### Guardar archivo (comando contextual)
+
+1. Usuario presiona Ctrl+S o hace clic en "Guardar"
+2. `MainShellViewModel.SaveCommand` → `ICommandRegistry.ExecuteAsync("Save")`
+3. `CommandRegistry` consulta `ICommandContext.ActiveRoute`
+4. Si hay un editor activo (`BaseTextEditorViewModel`):
+   a. `ActiveRoute.CanExecute("Save")` → true (si `IsDirty && FilePath != ""`)
+   b. `ActiveRoute.ExecuteAsync("Save")` → `BaseTextEditorViewModel.SaveAsync()`
+   c. `SaveAsync()` → `IFileService.WriteTextAsync()`
+5. Si no hay editor activo:
+   a. `ActiveRoute` es null → `CanExecute` devuelve false
+   b. El comando no se ejecuta (botón deshabilitado)
+
+**Regla:** Los comandos contextuales (Save, Copy, Paste, etc.) **deben** usar `ICommandRegistry`. Los comandos globales (OpenProject, CloseProject, etc.) invocan servicios directamente.
+
 ## Registro de servicios (DI)
 
 Fichero: `DependencyInjection.cs`
@@ -117,7 +134,10 @@ Fichero: `DependencyInjection.cs`
 - `MainShellViewModel` → `MainShellViewModel` → Singleton
 - `SettingsShellViewModel` → `SettingsShellViewModel` → Singleton
 - `AppDockFactory` → `AppDockFactory` → Singleton
+- `NavigationService` → `NavigationService` → Singleton (implementa `INavigationService` e `ICommandContext`)
 - `INavigationService` → `NavigationService` → Singleton
+- `ICommandContext` → `NavigationService` → Singleton
+- `ICommandRegistry` → `CommandRegistry` → Singleton
 - `ProjectExplorerShellViewModel` → `ProjectExplorerShellViewModel` → Singleton
 - `TemplateEditorShellViewModel` → `TemplateEditorShellViewModel` → **Scoped**
 - `IMessenger` → `WeakReferenceMessenger.Default` → Singleton
@@ -128,4 +148,4 @@ Fichero: `DependencyInjection.cs`
 - `IDialogService` → `DialogService` → Singleton
 - `ITemplatesService` → `TemplatesService` → Singleton
 
-Nota: `TemplateEditorShellViewModel` es Scoped porque se crea una instancia por cada pestaña de editor abierta.
+Nota: `TemplateEditorShellViewModel` es Scoped porque se crea una instancia por cada pestaña de editor abierta. `NavigationService` se registra como ambas interfaces (`INavigationService` e `ICommandContext`) porque trackea el documento activo para el Command Routing.

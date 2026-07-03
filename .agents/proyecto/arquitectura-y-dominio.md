@@ -57,13 +57,29 @@ Recursos compartidos entre screens van en `UI/Shared/` (BaseViewModel, converter
 
 ## Arquitectura MVVM
 
-Cadena de dependencias: `UI/Views (.axaml) → ViewModels → UI/Services → Services → Interfaces → Models`
+Cadena de dependencias: `UI/Views (.axaml) → ViewModels → ICommandRegistry → ICommandRoute → Services → Interfaces → Models`
 
 - `Models/` → POCOs de dominio
-- `Interfaces/` → Contratos IoC
+- `Interfaces/` → Contratos IoC (incluye `ICommandRegistry`, `ICommandRoute`, `ICommandContext`)
 - `Services/` → Lógica de negocio
 - `UI/Services/` → Lógica de presentación (depende de Avalonia/Dock)
+- `UI/Services/Commands/` → `CommandRegistry` (intermediario entre Shell y ViewModels contextuales)
 - `UI/Views/` → ViewModels + XAML (.axaml)
+
+### Capa de comandos (Command Routing)
+
+Los comandos del Shell que operan en el documento/tool activo **deben** usar `ICommandRegistry` para resolver el comando contextual. Esto permite que el Shell invoque operaciones sin acoplarse a ViewModels concretos.
+
+**Flujo obligatorio para comandos contextuales:**
+1. UI (menú/toolbar/keybinding) → `MainShellViewModel.SaveCommand`
+2. `MainShellViewModel` → `ICommandRegistry.ExecuteAsync("Save")`
+3. `CommandRegistry` → `ICommandContext.ActiveRoute` (el ViewModel del documento activo)
+4. `ICommandRoute.ExecuteAsync("Save")` → `BaseTextEditorViewModel.SaveAsync()`
+5. `SaveAsync()` → `IFileService.WriteTextAsync()`
+
+**Excepción:** Los comandos globales del Shell (abrir/cerrar proyecto, nuevo proyecto, salir) invocan servicios directamente, sin pasar por `ICommandRegistry`.
+
+Ver `especificaciones/command-routing.md` para detalles de implementación.
 
 ## Inyección de dependencias
 
@@ -80,9 +96,9 @@ services.AddSingleton<INavigationService, NavigationService>();
 ```
 
 Dependencias de ViewModels:
-- `MainShellViewModel` → `IProjectService`, `INavigationService`
+- `MainShellViewModel` → `IProjectService`, `INavigationService`, `ICommandRegistry`
 - `ProjectExplorerShellViewModel` → `IProjectContext`, `IProjectService`, `IMessenger`, `INavigationService`
-- `TemplateEditorShellViewModel` → `ITemplatesService`, `IFileService`, `IDialogService`
+- `TemplateEditorShellViewModel` → `ITemplatesService`, `IFileService`, `IDialogService`, `ICommandRoute` (implementa)
 
 ## Sistema de mensajería
 
@@ -129,7 +145,7 @@ RootDock
 ```
 
 Componentes:
-- `INavigationService` / `NavigationService`: Contrato + implementación que abstrae Dock.Avalonia. Lazy initialization del layout.
+- `INavigationService` / `NavigationService`: Contrato + implementación que abstrae Dock.Avalonia. Lazy initialization del layout. **También implementa `ICommandContext`** para trackear el documento activo.
 - `AppDockFactory : Factory`: Hereda de `Dock.Model.Mvvm.Factory`. Crea layout lazy. Resuelve ViewModels desde `IServiceProvider`.
 
 Métodos de INavigationService:
@@ -140,6 +156,9 @@ Métodos de INavigationService:
 - `CloseDocumentAsync(id)` → Cierra documento con confirmación si es necesario (ICloseAware)
 - `CanCloseAllAsync()` → Comprueba si todos los documentos pueden cerrarse
 - `GetOpenEditors()` → Obtiene lista de editores abiertos
+
+Propiedad de ICommandContext (implementado por NavigationService):
+- `ActiveRoute` → Devuelve el `ICommandRoute` del documento/tool activo (null si no hay o no implementa la interfaz)
 
 ## Estado actual
 

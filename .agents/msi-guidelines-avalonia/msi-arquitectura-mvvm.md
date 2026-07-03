@@ -108,6 +108,25 @@ Implementacion recomendada: switch explicito para screens conocidas + fallback p
 - Usar `ObservableObject` como base funcional.
 - Usar `[ObservableProperty]` y `[RelayCommand]` cuando encaje.
 
+### Regla de capa de comandos (Command Routing)
+
+Los comandos del Shell que operan en el documento/tool activo **deben** delegar en `ICommandRegistry`, no invocar servicios directamente.
+
+**Flujo obligatorio para comandos contextuales:**
+1. UI (menu/toolbar/keybinding) → `MainShellViewModel.SaveCommand`
+2. `MainShellViewModel` → `ICommandRegistry.ExecuteAsync("Save")`
+3. `CommandRegistry` → `ICommandContext.ActiveRoute` (el ViewModel del documento activo)
+4. `ICommandRoute.ExecuteAsync("Save")` → ViewModel concreto (ej: `BaseTextEditorViewModel.SaveAsync()`)
+5. ViewModel → Servicio de dominio (ej: `IFileService.WriteTextAsync()`)
+
+**Excepcion:** Los comandos globales del Shell (abrir/cerrar proyecto, nuevo proyecto, salir) invocan servicios directamente, sin pasar por `ICommandRegistry`.
+
+**Regla practica:**
+- Si el comando opera sobre el documento activo (Save, Copy, Paste) → usar `ICommandRegistry`
+- Si el comando opera sobre la aplicacion o proyecto (Open, Close, New, Exit) → invocar servicio directamente
+
+Ver `especificaciones/command-routing.md` para detalles de implementacion.
+
 ### Regla de UI framework en ViewModel (CRITICA)
 
 **Prohibido** acceder a tipos de Avalonia desde un ViewModel. Esto incluye:
@@ -274,6 +293,7 @@ catch (Exception ex) { _ = ex; }
 - **Poner validacion de dominio en un ViewModel.** La logica de negocio va en `Services/`.
 - **Acoplar un ViewModel a otro ViewModel concreto.** Usar mensajeria o servicio compartido.
 - **Resolver servicios desde el contenedor dentro del ViewModel** salvo en infraestructura muy localizada y justificada (`AppDockFactory`).
+- **Shell invocando servicios directamente para comandos contextuales.** Los comandos que operan sobre el documento activo (Save, Copy, Paste) deben usar `ICommandRegistry`, no invocar `IFileService` o similar directamente desde el Shell. Esto rompe el desacoplamiento entre Shell y documentos.
 
 ### Antipatrones de UI
 

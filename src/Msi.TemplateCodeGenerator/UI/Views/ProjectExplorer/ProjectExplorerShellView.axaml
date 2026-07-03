@@ -36,7 +36,8 @@
         </Border>
 
         <!-- Árbol de ficheros del proyecto -->
-        <TreeView x:Name="FileTree" ItemsSource="{Binding FileTree}" SelectedItem="{Binding SelectedFileEntry}">
+        <TreeView x:Name="FileTree" ItemsSource="{Binding FileTree}" SelectedItem="{Binding SelectedFileEntry}"
+                  DoubleTapped="OnTreeViewDoubleTapped">
             <TreeView.Styles>
                 <Style Selector="TreeViewItem">
                     <Setter Property="IsExpanded" Value="{Binding IsExpanded}" />

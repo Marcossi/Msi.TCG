@@ -1,0 +1,100 @@
+{
+  "header": {
+    "version": 1,
+    "category": "Element",
+    "defaults": "_defaults.json"
+  },
+  "data": {
+    "Id": "MainMenu",
+    "Name": "MainMenu",
+    "NameLower": "mainMenu",
+    "ClassName": "MainMenu",
+    "Description": "Definición del menú principal de la aplicación",
+    "GenerateSerialization": true,
+    "GenerateDto": false,
+    "GeneratePersistence": false,
+    "GenerateValidation": false,
+    "Properties": [
+      {
+        "Name": "Title",
+        "NameLower": "title",
+        "Type": "string",
+        "Description": "Título del menú",
+        "Accessibility": "public",
+        "IsReadOnly": false,
+        "IsNullable": false,
+        "SerializationToken": "mmTitle",
+        "SerializeAsReference": false,
+        "SerializationFormat": "",
+        "DefaultValue": "string.Empty",
+        "InitializationMode": "default",
+        "CopyMode": "shallow",
+        "IsRequired": true,
+        "ValidationRules": "MaxLength(50)"
+      },
+      {
+        "Name": "IsVisible",
+        "NameLower": "isVisible",
+        "Type": "bool",
+        "Description": "Indica si el menú es visible",
+        "Accessibility": "public",
+        "IsReadOnly": false,
+        "IsNullable": false,
+        "SerializationToken": "mmIsVisible",
+        "SerializeAsReference": false,
+        "SerializationFormat": "",
+        "DefaultValue": "true",
+        "InitializationMode": "default",
+        "CopyMode": "shallow",
+        "IsRequired": false,
+        "ValidationRules": ""
+      }
+    ],
+    "SubElements": [
+      {
+        "Id": "MenuItem",
+        "Name": "MenuItem",
+        "NameLower": "menuItem",
+        "Description": "Elemento del menú",
+        "RelationType": "composition",
+        "IsCollection": true,
+        "Properties": [
+          {
+            "Name": "Label",
+            "NameLower": "label",
+            "Type": "string",
+            "Description": "Etiqueta mostrada en el menú",
+            "Accessibility": "public",
+            "IsReadOnly": false,
+            "IsNullable": false,
+            "SerializationToken": "miLabel",
+            "SerializeAsReference": false,
+            "SerializationFormat": "",
+            "DefaultValue": "string.Empty",
+            "InitializationMode": "default",
+            "CopyMode": "shallow",
+            "IsRequired": true,
+            "ValidationRules": "MaxLength(100)"
+          },
+          {
+            "Name": "Command",
+            "NameLower": "command",
+            "Type": "string",
+            "Description": "Comando asociado al elemento del menú",
+            "Accessibility": "public",
+            "IsReadOnly": false,
+            "IsNullable": false,
+            "SerializationToken": "miCommand",
+            "SerializeAsReference": false,
+            "SerializationFormat": "",
+            "DefaultValue": "string.Empty",
+            "InitializationMode": "default",
+            "CopyMode": "shallow",
+            "IsRequired": true,
+            "ValidationRules": "MaxLength(50)"
+          }
+        ]
+      }
+    ]
+  }
+}

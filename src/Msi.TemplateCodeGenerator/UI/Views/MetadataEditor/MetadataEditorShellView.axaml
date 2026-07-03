@@ -1,0 +1,69 @@
+<UserControl x:Class="Msi.TemplateCodeGenerator.UI.Views.MetadataEditor.MetadataEditorShellView"
+              x:ClassModifier="internal"
+              xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+              xmlns:local="clr-namespace:Msi.TemplateCodeGenerator.UI.Views.MetadataEditor"
+              mc:Ignorable="d" 
+              d:DesignHeight="450" d:DesignWidth="800">
+
+    <DockPanel>
+        <!-- Toolbar -->
+        <Border DockPanel.Dock="Top" 
+                Background="#F0F0F0" 
+                Padding="4"
+                BorderBrush="#CCCCCC"
+                BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+                <Button Content="Guardar" 
+                        Command="{Binding SaveCommand}"
+                        ToolTip.Tip="Guardar (Ctrl+S)"
+                        Padding="8,4"
+                        MinWidth="80"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Editor + Preview -->
+        <Grid ColumnDefinitions="*, 4, *">
+            <!-- Editor JSON (Izquierda) -->
+            <TextBox Grid.Column="0"
+                     Text="{Binding Content}"
+                     AcceptsReturn="True"
+                     AcceptsTab="True"
+                     FontFamily="Consolas, Monospace, Courier New"
+                     VerticalContentAlignment="Top"
+                     PlaceholderText="Edita el JSON de metadata aquí..."
+                     BorderThickness="1"
+                     BorderBrush="#CCCCCC"
+                     CornerRadius="0"/>
+            
+            <!-- Splitter -->
+            <GridSplitter Grid.Column="1" 
+                          ResizeDirection="Columns" 
+                          Background="#DDDDDD" />
+
+            <!-- Preview (Derecha) -->
+            <Panel Grid.Column="2">
+                <!-- Preview normal -->
+                <TextBox Text="{Binding PreviewContent}"
+                         IsReadOnly="True"
+                         AcceptsReturn="True"
+                         FontFamily="Consolas, Monospace, Courier New"
+                         VerticalContentAlignment="Top"
+                         PlaceholderText="Preview con defaults aplicados..."
+                         BorderThickness="1"
+                         BorderBrush="#CCCCCC"
+                         CornerRadius="0"
+                         IsVisible="{Binding !HasError}"/>
+                
+                <!-- Preview con error -->
+                <TextBlock Text="{Binding PreviewContent}"
+                           Foreground="Red"
+                           TextWrapping="Wrap"
+                           Margin="8"
+                           IsVisible="{Binding HasError}"/>
+            </Panel>
+        </Grid>
+    </DockPanel>
+</UserControl>

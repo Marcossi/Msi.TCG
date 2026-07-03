@@ -16,6 +16,11 @@ public enum FileType
     Script,
 
     /// <summary>
+    /// Fichero JSON de metadatos dentro de la carpeta metadata/.
+    /// </summary>
+    Metadata,
+
+    /// <summary>
     /// Directorio.
     /// </summary>
     Directory,

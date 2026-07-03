@@ -1,0 +1,72 @@
+{
+  "header": {
+    "version": 1,
+    "category": "Element",
+    "defaults": "_defaults.json"
+  },
+  "data": {
+    "Id": "CustomerQuery",
+    "Name": "CustomerQuery",
+    "NameLower": "customerQuery",
+    "ClassName": "CustomerQuery",
+    "Description": "Consulta de datos de cliente desde la base de datos",
+    "GenerateSerialization": true,
+    "GenerateDto": true,
+    "GeneratePersistence": false,
+    "GenerateValidation": true,
+    "Properties": [
+      {
+        "Name": "CustomerId",
+        "NameLower": "customerId",
+        "Type": "Guid",
+        "Description": "Identificador único del cliente",
+        "Accessibility": "public",
+        "IsReadOnly": true,
+        "IsNullable": false,
+        "SerializationToken": "cqCustomerId",
+        "SerializeAsReference": false,
+        "SerializationFormat": "",
+        "DefaultValue": "Guid.Empty",
+        "InitializationMode": "default",
+        "CopyMode": "shallow",
+        "IsRequired": true,
+        "ValidationRules": ""
+      },
+      {
+        "Name": "IncludeOrders",
+        "NameLower": "includeOrders",
+        "Type": "bool",
+        "Description": "Indica si se deben incluir los pedidos del cliente",
+        "Accessibility": "public",
+        "IsReadOnly": false,
+        "IsNullable": false,
+        "SerializationToken": "cqIncludeOrders",
+        "SerializeAsReference": false,
+        "SerializationFormat": "",
+        "DefaultValue": "false",
+        "InitializationMode": "default",
+        "CopyMode": "shallow",
+        "IsRequired": false,
+        "ValidationRules": ""
+      },
+      {
+        "Name": "MaxResults",
+        "NameLower": "maxResults",
+        "Type": "int",
+        "Description": "Número máximo de resultados a devolver",
+        "Accessibility": "public",
+        "IsReadOnly": false,
+        "IsNullable": false,
+        "SerializationToken": "cqMaxResults",
+        "SerializeAsReference": false,
+        "SerializationFormat": "",
+        "DefaultValue": "100",
+        "InitializationMode": "default",
+        "CopyMode": "shallow",
+        "IsRequired": false,
+        "ValidationRules": "Range(1, 1000)"
+      }
+    ],
+    "SubElements": []
+  }
+}
