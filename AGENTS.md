@@ -12,6 +12,8 @@ Architecture docs live in `.agents/` (layered). Load only the minimum layer need
    - `screens/` — detalles de MainShell, TemplateEditor, ProjectExplorer, Settings
    - `adr/` — Architecture Decision Records (consultar `adr/README.md` antes de cambios estructurales)
    - `especificaciones/` — especificaciones técnicas de componentes
+     - `bootstrap-alignment.md` — reestructuración del bootstrap con IApp
+     - `command-routing-alignment.md` — clasificación de operaciones y fixes de alineación
 2. `.agents/msi-guidelines-avalonia/` — Avalonia MVVM, bootstrap, shell, navigation rules
    - `msi-arquitectura-mvvm.md` — estructura de Screens, reglas MVVM, antipatrones, audit trail
    - `msi-bootstrap-avalonia.md` — arranque, builders, IApp (opcional)
@@ -22,7 +24,11 @@ Architecture docs live in `.agents/` (layered). Load only the minimum layer need
    - `msi-base-dotnet.md` — código, async, DI, capas (3-project)
    - `msi-base-dotnet-single-project.md` — variante single-project
    - `msi-bootstrap-hosting.md` — host, Serilog, IoC
-4. `.agents/libraries-doc/` — third-party library docs (Dock for Avalonia)
+4. `.agents/libraries-doc/` — third-party library docs
+   - `Dock-Avalonia/` — Dock for Avalonia (IDE-like docking)
+   - `Scriban-7.2.5/` — Scriban template engine
+     - **Sintaxis de scripts**: `language.md` + `builtins/` — cargar al escribir o depurar templates `.scriban`
+     - **API de .NET**: `runtime/` — cargar al trabajar con el motor (TemplateContext, ScriptObject, parsing, rendering)
 
 **Note:** `msi-base-dotnet.md` describes an ideal 3-project architecture (Domain/Infrastructure/App). This repo uses single-project structure. See `msi-base-dotnet-single-project.md` for the variant applied here.
 
@@ -40,6 +46,15 @@ dotnet test
 ```
 
 Build output goes to `artifacts/` at repo root (`UseArtifactsOutput=true`). Solution file, `Directory.Build.props`, `Directory.Packages.props`, and `global.json` are all at repo root.
+
+### Logs
+
+| Fichero | Modo | Ruta (desde repo root) | Propósito | Retención |
+|---|---|---|---|---|
+| `Msi.TemplateCodeGenerator-YYYYMMDD.log` | DEBUG y RELEASE | `artifacts/bin/Msi.TemplateCodeGenerator/debug/logs/` | Log histórico diario | 7 días (automática) |
+| `Msi.TemplateCodeGenerator-last.log` | Solo DEBUG | `artifacts/bin/Msi.TemplateCodeGenerator/debug/logs/` | Log de la ejecución actual para debugging | Se sobrescribe en cada arranque |
+
+Cuando un usuario reporte un problema, indicar que reproduzca el error y consulte `Msi.TemplateCodeGenerator-last.log`. Ese fichero contiene únicamente la ejecución problemática, sin ruido de sesiones anteriores.
 
 ## Stack
 
