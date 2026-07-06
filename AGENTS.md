@@ -2,8 +2,8 @@
 
 ## Source of truth
 
-Architecture docs live in `.agents/` (layered). Load only the minimum layer needed:
-1. `.agents/proyecto/` — current product specifics
+Architecture docs live in `docs/agents/` (layered). Load only the minimum layer needed:
+1. `docs/agents/proyecto/` — current product specifics
    - `arquitectura-y-dominio.md` — propósito, modelo de dominio, MVVM, mensajería, navegación
    - `arquitectura-ioc.md` — jerarquía de contenedores, patrón Context vs Service, DI table
    - `restricciones.md` — Scriban static-only, async I/O, naming, serialización, audit trail
@@ -18,17 +18,17 @@ Architecture docs live in `.agents/` (layered). Load only the minimum layer need
       - `fase-2-motor-scripts.md` — motor Scriban, helpers C#, write_to_file (ADR-005 Fase 2)
       - `fase-3-integracion-ui.md` — ProjectExplorer, TemplateEditor, Generate/GenerateAll (ADR-005 Fase 3)
       - `fase-4-robustez-ux.md` — FileWatcher, marcado de errores, documentación (ADR-005 Fase 4)
-2. `.agents/msi-guidelines-avalonia/` — Avalonia MVVM, bootstrap, shell, navigation rules
+2. `docs/agents/msi-guidelines-avalonia/` — Avalonia MVVM, bootstrap, shell, navigation rules
    - `msi-arquitectura-mvvm.md` — estructura de Screens, reglas MVVM, antipatrones, audit trail
    - `msi-bootstrap-avalonia.md` — arranque, builders, IApp (opcional)
    - `msi-navegacion-shell-y-ventanas.md` — reglas de shell, diálogos, documentos
    - `msi-navigation-simple.md` — patrón NavigateTo + SelectTarget (shells simples)
    - `msi-navigation-docking.md` — patrón Dock.Avalonia, API rica, AppDockFactory
-3. `.agents/msi-guidelines-dotnet/` — .NET base conventions and hosting rules
+3. `docs/agents/msi-guidelines-dotnet/` — .NET base conventions and hosting rules
    - `msi-base-dotnet.md` — código, async, DI, capas (3-project)
    - `msi-base-dotnet-single-project.md` — variante single-project
    - `msi-bootstrap-hosting.md` — host, Serilog, IoC
-4. `.agents/libraries-doc/` — third-party library docs
+4. `docs/agents/libraries-doc/` — third-party library docs
    - `Dock-Avalonia/` — Dock for Avalonia (IDE-like docking)
    - `Scriban-7.2.5/` — Scriban template engine
      - **Sintaxis de scripts**: `language.md` + `builtins/` — cargar al escribir o depurar templates `.scriban`
@@ -101,6 +101,12 @@ Cuando un usuario reporte un problema, indicar que reproduzca el error y consult
 ├── Msi.TemplateCodeGenerator.slnx
 ├── Directory.Build.props, Directory.Packages.props, global.json
 ├── artifacts/                    ← Build output (all projects)
+├── docs/
+│   └── agents/                   ← Agent documentation (architecture, guidelines, libs)
+│       ├── proyecto/             ← Product specifics, ADRs, specifications
+│       ├── msi-guidelines-avalonia/
+│       ├── msi-guidelines-dotnet/
+│       └── libraries-doc/        ← Third-party library docs
 ├── src/
 │   └── Msi.TemplateCodeGenerator/
 │       ├── Program.cs, App.axaml(.cs), DependencyInjection.cs, ViewLocator.cs

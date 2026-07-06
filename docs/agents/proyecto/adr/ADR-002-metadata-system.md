@@ -201,6 +201,6 @@ Añadir "Commands" en el futuro es:
 
 ## Referencias
 
-- Especificación técnica: `.agents/proyecto/especificaciones/metadata-system.md`
-- Modelo de proyecto: `.agents/proyecto/modelo-de-proyecto.md`
-- Restricciones de Scriban: `.agents/proyecto/restricciones.md` (sección "Scriban: Solo métodos estáticos")
+- Especificación técnica: `docs/agents/proyecto/especificaciones/metadata-system.md`
+- Modelo de proyecto: `docs/agents/proyecto/modelo-de-proyecto.md`
+- Restricciones de Scriban: `docs/agents/proyecto/restricciones.md` (sección "Scriban: Solo métodos estáticos")

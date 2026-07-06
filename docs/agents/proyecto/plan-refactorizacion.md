@@ -529,8 +529,8 @@ ViewModels (añadir `ILogger<T>` al constructor):
    - Referencia a los TODOs pendientes (FileWatcher, secciones recursivas, etc.).
 
 **Ficheros afectados**:
-- `.agents/proyecto/alcance-y-dominio.md` (MODIFICAR)
-- `.agents/proyecto/implementacion-actual.md` (MODIFICAR)
+- `docs/agents/proyecto/alcance-y-dominio.md` (MODIFICAR)
+- `docs/agents/proyecto/implementacion-actual.md` (MODIFICAR)
 
 **Validación**:
 - [ ] Ambos ficheros tienen contenido significativo.
@@ -587,4 +587,4 @@ Fase 3 (fortalecer base)
 - Ejecutar todos los checkboxes de validación de cada fase.
 - Si un checkbox falla, reportar el paso específico y el fichero afectado.
 - No aprobar una fase hasta que todos sus checkboxes estén marcados.
-- Verificar coherencia con las guías en `.agents/msi-guidelines-avalonia/` y `.agents/msi-guidelines-dotnet/`.
+- Verificar coherencia con las guías en `docs/agents/msi-guidelines-avalonia/` y `docs/agents/msi-guidelines-dotnet/`.

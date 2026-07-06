@@ -157,6 +157,6 @@ Las operaciones se clasifican en dos categorías mutuamente excluyentes:
 
 ## Referencias
 
-- Guías de bootstrap: `.agents/msi-guidelines-avalonia/msi-bootstrap-avalonia.md`
-- Especificación de implementación: `.agents/proyecto/especificaciones/bootstrap-alignment.md`
+- Guías de bootstrap: `docs/agents/msi-guidelines-avalonia/msi-bootstrap-avalonia.md`
+- Especificación de implementación: `docs/agents/proyecto/especificaciones/bootstrap-alignment.md`
 - ADR relacionado: `ADR-001-command-routing.md`

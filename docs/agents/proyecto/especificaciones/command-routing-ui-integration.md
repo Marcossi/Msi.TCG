@@ -325,7 +325,7 @@ internal sealed class NavigationService(
 **Notas de diseño:**
 - `NavigationService` implementa ambas interfaces (`INavigationService` e `ICommandContext`).
 - `ActiveRoute` se actualiza automáticamente cuando Dock.Avalonia cambia el documento activo.
-- El mecanismo exacto de detección de cambio de foco depende de la API de Dock.Avalonia (consultar `.agents/libraries-doc/Dock-12.0.0.2/index.md`).
+- El mecanismo exacto de detección de cambio de foco depende de la API de Dock.Avalonia (consultar `docs/agents/libraries-doc/Dock-12.0.0.2/index.md`).
 
 ### 6. Cambios en DependencyInjection.cs
 
@@ -425,7 +425,7 @@ public static IServiceCollection AddTemplateCodeGeneratorServices(this IServiceC
 
 ## Consideraciones de testing
 
-Ver `.agents/proyecto/especificaciones/command-routing-testing.md` para el plan de pruebas detallado.
+Ver `docs/agents/proyecto/especificaciones/command-routing-testing.md` para el plan de pruebas detallado.
 
 **Pruebas adicionales para la integración UI:**
 - Verificar que el toolbar del editor se muestra correctamente.
@@ -435,7 +435,7 @@ Ver `.agents/proyecto/especificaciones/command-routing-testing.md` para el plan 
 
 ## Referencias
 
-- ADR: `.agents/proyecto/adr/ADR-001-command-routing.md`
-- Especificación de Command Routing: `.agents/proyecto/especificaciones/command-routing.md`
-- Plan de pruebas: `.agents/proyecto/especificaciones/command-routing-testing.md`
-- Documentación de Dock.Avalonia: `.agents/libraries-doc/Dock-12.0.0.2/index.md`
+- ADR: `docs/agents/proyecto/adr/ADR-001-command-routing.md`
+- Especificación de Command Routing: `docs/agents/proyecto/especificaciones/command-routing.md`
+- Plan de pruebas: `docs/agents/proyecto/especificaciones/command-routing-testing.md`
+- Documentación de Dock.Avalonia: `docs/agents/libraries-doc/Dock-12.0.0.2/index.md`

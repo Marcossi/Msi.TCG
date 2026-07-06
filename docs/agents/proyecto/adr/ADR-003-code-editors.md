@@ -165,6 +165,6 @@ internal sealed partial class MetadataEditorShellViewModel : BaseTextEditorViewM
 
 ## Referencias
 
-- Especificación técnica: `.agents/proyecto/especificaciones/metadata-editor.md`
+- Especificación técnica: `docs/agents/proyecto/especificaciones/metadata-editor.md`
 - ADR-002: Sistema de Metadatos para Plantillas Scriban
-- Arquitectura MVVM: `.agents/proyecto/arquitectura-y-dominio.md`
+- Arquitectura MVVM: `docs/agents/proyecto/arquitectura-y-dominio.md`

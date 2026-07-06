@@ -10,7 +10,7 @@ Este patron aplica a aplicaciones que necesitan:
 - Layout redimensionable y potencialmente persistible
 - Multiples vistas simultaneas (no solo una activa)
 
-**Dependencia obligatoria**: Consultar `.agents/libraries-doc/Dock-*/index.md` antes de asumir comportamiento de Dock.Avalonia. No improvisar sobre la API.
+**Dependencia obligatoria**: Consultar `docs/agents/libraries-doc/Dock-*/index.md` antes de asumir comportamiento de Dock.Avalonia. No improvisar sobre la API.
 
 ## Estructura de archivos
 

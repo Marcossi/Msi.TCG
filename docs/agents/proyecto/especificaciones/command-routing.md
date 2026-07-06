@@ -326,7 +326,7 @@ internal partial class MainShellViewModel : BaseViewModel
 
 ## Consideraciones de testing
 
-Ver `.agents/proyecto/especificaciones/command-routing-testing.md` para el plan de pruebas detallado.
+Ver `docs/agents/proyecto/especificaciones/command-routing-testing.md` para el plan de pruebas detallado.
 
 ## Migración del código existente
 
@@ -361,6 +361,6 @@ services.AddSingleton<ICommandRegistry, CommandRegistry>();
 
 ## Referencias
 
-- ADR: `.agents/proyecto/adr/ADR-001-command-routing.md`
-- Plan de pruebas: `.agents/proyecto/especificaciones/command-routing-testing.md`
-- Documentación de Dock.Avalonia: `.agents/libraries-doc/Dock-12.0.0.2/index.md`
+- ADR: `docs/agents/proyecto/adr/ADR-001-command-routing.md`
+- Plan de pruebas: `docs/agents/proyecto/especificaciones/command-routing-testing.md`
+- Documentación de Dock.Avalonia: `docs/agents/libraries-doc/Dock-12.0.0.2/index.md`

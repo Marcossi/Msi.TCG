@@ -6,8 +6,8 @@ Documentar la clasificación de operaciones (global vs contextual) y alinear la 
 
 ## Referencia
 
-- ADR: `.agents/proyecto/adr/ADR-001-command-routing.md`
-- Especificación de Command Routing: `.agents/proyecto/especificaciones/command-routing.md`
+- ADR: `docs/agents/proyecto/adr/ADR-001-command-routing.md`
+- Especificación de Command Routing: `docs/agents/proyecto/especificaciones/command-routing.md`
 
 ## 1. Clasificación de operaciones
 
@@ -364,7 +364,7 @@ Confirmar con el equipo si `CreateTestDocument` tiene uso legítimo. Si no, elim
 
 ## Referencias
 
-- ADR: `.agents/proyecto/adr/ADR-001-command-routing.md`
-- Especificación de Command Routing: `.agents/proyecto/especificaciones/command-routing.md`
-- Especificación de Metadata Editor: `.agents/proyecto/especificaciones/metadata-editor.md`
-- Guías de MVVM: `.agents/msi-guidelines-avalonia/msi-arquitectura-mvvm.md`
+- ADR: `docs/agents/proyecto/adr/ADR-001-command-routing.md`
+- Especificación de Command Routing: `docs/agents/proyecto/especificaciones/command-routing.md`
+- Especificación de Metadata Editor: `docs/agents/proyecto/especificaciones/metadata-editor.md`
+- Guías de MVVM: `docs/agents/msi-guidelines-avalonia/msi-arquitectura-mvvm.md`

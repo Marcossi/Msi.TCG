@@ -112,5 +112,5 @@ Broadcast de mensajes como "SaveActiveDocument". El VM activo responde.
 
 ## Referencias
 
-- Especificación técnica: `.agents/proyecto/especificaciones/command-routing.md`
-- Plan de pruebas: `.agents/proyecto/especificaciones/command-routing-testing.md`
+- Especificación técnica: `docs/agents/proyecto/especificaciones/command-routing.md`
+- Plan de pruebas: `docs/agents/proyecto/especificaciones/command-routing-testing.md`

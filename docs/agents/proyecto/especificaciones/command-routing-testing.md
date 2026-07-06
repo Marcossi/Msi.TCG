@@ -466,6 +466,6 @@ dotnet test --collect:"XPlat Code Coverage"
 
 ## Referencias
 
-- ADR: `.agents/proyecto/adr/ADR-001-command-routing.md`
-- Especificación técnica: `.agents/proyecto/especificaciones/command-routing.md`
-- Convenciones de testing: `.agents/msi-guidelines-dotnet/msi-base-dotnet.md` (sección de testing si existe)
+- ADR: `docs/agents/proyecto/adr/ADR-001-command-routing.md`
+- Especificación técnica: `docs/agents/proyecto/especificaciones/command-routing.md`
+- Convenciones de testing: `docs/agents/msi-guidelines-dotnet/msi-base-dotnet.md` (sección de testing si existe)

@@ -6,8 +6,8 @@ Reestructurar el bootstrap del proyecto para alinearlo con las guías de MSI (`m
 
 ## Referencia
 
-- ADR: `.agents/proyecto/adr/ADR-004-app-facade-and-bootstrap.md`
-- Guías de bootstrap: `.agents/msi-guidelines-avalonia/msi-bootstrap-avalonia.md`
+- ADR: `docs/agents/proyecto/adr/ADR-004-app-facade-and-bootstrap.md`
+- Guías de bootstrap: `docs/agents/msi-guidelines-avalonia/msi-bootstrap-avalonia.md`
 
 ## Cambios detallados
 
@@ -341,6 +341,6 @@ El diseñador visual de Avalonia solo ejecuta `BuildAvaloniaApp()`, no `Program.
 
 ## Referencias
 
-- ADR: `.agents/proyecto/adr/ADR-004-app-facade-and-bootstrap.md`
-- Guías de bootstrap: `.agents/msi-guidelines-avalonia/msi-bootstrap-avalonia.md`
-- Guías de MVVM: `.agents/msi-guidelines-avalonia/msi-arquitectura-mvvm.md`
+- ADR: `docs/agents/proyecto/adr/ADR-004-app-facade-and-bootstrap.md`
+- Guías de bootstrap: `docs/agents/msi-guidelines-avalonia/msi-bootstrap-avalonia.md`
+- Guías de MVVM: `docs/agents/msi-guidelines-avalonia/msi-arquitectura-mvvm.md`

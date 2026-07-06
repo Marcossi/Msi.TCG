@@ -26,7 +26,7 @@ Si se usa un layout dockeable estilo IDE:
 - Centralizar los IDs de navegacion en constantes.
 - Inicializar el layout de forma lazy si eso evita dependencias circulares.
 - La factory del layout puede depender de `IServiceProvider` como punto de composicion, pero no trasladar ese patron al resto de la aplicacion.
-- **Referencia obligatoria:** Para detalles de implementacion de `Dock.Avalonia`, modelado de paneles, persistencia de layout y patrones MVVM, leer primero `.agents/libraries-doc/Dock-12.0.0.2/index.md` y sus articulos asociados. No asumir comportamiento sin consultar la doc oficial.
+- **Referencia obligatoria:** Para detalles de implementacion de `Dock.Avalonia`, modelado de paneles, persistencia de layout y patrones MVVM, leer primero `docs/agents/libraries-doc/Dock-12.0.0.2/index.md` y sus articulos asociados. No asumir comportamiento sin consultar la doc oficial.
 
 ## Dialogos y ventanas auxiliares
 
