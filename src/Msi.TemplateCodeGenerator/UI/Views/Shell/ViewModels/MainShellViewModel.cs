@@ -19,6 +19,8 @@ internal partial class MainShellViewModel : BaseViewModel
     private readonly IProjectService _projectService;
     private readonly IFileDialogService _fileDialogService;
     private readonly ICommandRegistry _commandRegistry;
+    private readonly INavigationService _navigationService;
+    private readonly IApp _app;
     private readonly ILogger<MainShellViewModel> _logger;
 
     ///      XAML                    ViewModel
@@ -40,11 +42,14 @@ internal partial class MainShellViewModel : BaseViewModel
         IProjectService projectService,
         IFileDialogService fileDialogService,
         ICommandRegistry commandRegistry,
+        IApp app,
         ILogger<MainShellViewModel> logger)
     {
+        _navigationService = navigationService;
         _projectService = projectService;
         _fileDialogService = fileDialogService;
         _commandRegistry = commandRegistry;
+        _app = app;
         _logger = logger;
         _layout = navigationService.GetLayout();
     }
@@ -168,12 +173,31 @@ internal partial class MainShellViewModel : BaseViewModel
     }
 
     /// <summary>
-    /// Cierra la aplicación.
+    /// Cierra la aplicación de forma controlada.
+    /// Consulta CanCloseAllAsync() antes de cerrar para permitir guardar cambios pendientes.
     /// </summary>
     [RelayCommand]
-    private void Exit()
+    private async Task ExitAsync()
     {
         _logger.LogInformation("[UI] Command: Exit");
+        try
+        {
+            bool canClose = await _navigationService.CanCloseAllAsync();
+            if (canClose)
+            {
+                _logger.LogInformation("[UI] Cierre de aplicación confirmado");
+                _app.Shutdown();
+            }
+            else
+            {
+                _logger.LogInformation("[UI] Cierre de aplicación cancelado por el usuario");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[UI] Error executing Exit");
+            StatusMessage = $"Error: {ex.Message}";
+        }
     }
 
     /// <summary>

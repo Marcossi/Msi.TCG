@@ -11,9 +11,13 @@ Architecture docs live in `.agents/` (layered). Load only the minimum layer need
    - `services/` — detalles de ProjectService, TemplatesService, FileService
    - `screens/` — detalles de MainShell, TemplateEditor, ProjectExplorer, Settings
    - `adr/` — Architecture Decision Records (consultar `adr/README.md` antes de cambios estructurales)
-   - `especificaciones/` — especificaciones técnicas de componentes
-     - `bootstrap-alignment.md` — reestructuración del bootstrap con IApp
-     - `command-routing-alignment.md` — clasificación de operaciones y fixes de alineación
+    - `especificaciones/` — especificaciones técnicas de componentes
+      - `bootstrap-alignment.md` — reestructuración del bootstrap con IApp
+      - `command-routing-alignment.md` — clasificación de operaciones y fixes de alineación
+      - `fase-1-modelo-datos.md` — modelo Element + ElementProperty, carga de JSONs (ADR-005 Fase 1)
+      - `fase-2-motor-scripts.md` — motor Scriban, helpers C#, write_to_file (ADR-005 Fase 2)
+      - `fase-3-integracion-ui.md` — ProjectExplorer, TemplateEditor, Generate/GenerateAll (ADR-005 Fase 3)
+      - `fase-4-robustez-ux.md` — FileWatcher, marcado de errores, documentación (ADR-005 Fase 4)
 2. `.agents/msi-guidelines-avalonia/` — Avalonia MVVM, bootstrap, shell, navigation rules
    - `msi-arquitectura-mvvm.md` — estructura de Screens, reglas MVVM, antipatrones, audit trail
    - `msi-bootstrap-avalonia.md` — arranque, builders, IApp (opcional)

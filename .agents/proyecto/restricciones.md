@@ -67,6 +67,29 @@ internal sealed class ProjectService : IProjectService
 
 Un servicio sin logging es un servicio que no se puede diagnosticar en producción.
 
+### Criterio de ficheros de log
+
+La aplicación genera dos tipos de ficheros de log en el directorio `artifacts/bin/Msi.TemplateCodeGenerator/debug/logs/`:
+
+**Fichero principal: rolling diario con retención automática**
+
+Se genera un fichero por día con formato `Msi.TemplateCodeGenerator-YYYYMMDD.log`. Serilog elimina automáticamente los ficheros con más de 7 días de antigüedad. El directorio es constante, aunque el nombre del fichero activo varía diariamente.
+
+Razón: Proporciona un historial estructurado por día sin requerir lógica manual de archive o cleanup. La retención automática garantiza que el disco no se llene con logs antiguos.
+
+**Fichero `-last.log`: log de ejecución única (solo DEBUG)**
+
+En compilaciones DEBUG, el fichero `Msi.TemplateCodeGenerator-last.log` se borra en cada arranque antes de que Serilog comience a escribir. El fichero resultante contiene únicamente los logs de la sesión actual, sin arrastrar ejecuciones previas del mismo día. En compilaciones RELEASE, este fichero no se genera.
+
+Razón: Facilita la reproducción de errores durante el desarrollo. Cuando un usuario reporta un problema, el desarrollador puede indicar: "reproduce el error y consulta `Msi.TemplateCodeGenerator-last.log`". El fichero contendrá solo la ejecución problemática, sin ruido de sesiones anteriores.
+
+**Resumen**
+
+| Fichero | Modo | Propósito | Retención |
+|---|---|---|---|
+| `Msi.TemplateCodeGenerator-YYYYMMDD.log` | DEBUG y RELEASE | Log histórico diario | 7 días (automática) |
+| `Msi.TemplateCodeGenerator-last.log` | Solo DEBUG | Log de ejecución actual para debugging | Se sobrescribe en cada arranque |
+
 ### Error handling: Prohibido catch vacío
 
 Todo `catch` debe loguear la excepción. Prohibido `catch {}` vacío o `catch (Exception) {}` sin logging:
@@ -142,16 +165,28 @@ Todos los ViewModels heredan de `BaseViewModel`, que a su vez hereda de `Observa
 
 ### Capa de comandos (Command Routing)
 
-Los comandos del Shell se dividen en dos categorías:
+Los comandos del Shell se dividen en dos categorías mutuamente excluyentes:
 
-1. **Comandos globales**: Operan sobre la aplicación o el proyecto (abrir, cerrar, nuevo proyecto, salir). Invocan servicios directamente.
+1. **Comandos globales**: Operan sobre la aplicación o el proyecto (abrir, cerrar, nuevo proyecto, salir). Invocan servicios directamente o `IApp` para operaciones globales de la shell.
 2. **Comandos contextuales**: Operan sobre el documento/tool activo (guardar archivo, copiar, pegar). **Deben** usar `ICommandRegistry` para resolver el comando en el ViewModel activo.
+
+**Criterio de clasificación:** ¿La operación necesita saber qué documento tiene foco para ejecutarse correctamente? Si sí → contextual. Si no → global.
+
+| Operación | Categoría | Patrón |
+|---|---|---|
+| New/Open/Close/SaveProject | Global | Llamada directa a `IProjectService` |
+| Save (editor) | Contextual | `ICommandRegistry` → `ICommandRoute` |
+| OpenFile desde tree | Global | Llamada directa a `INavigationService` |
+| RefreshFiles | Global | Llamada directa a `IProjectService` |
+| Exit | Global | `IApp.Shutdown()` |
 
 **Regla:** Prohibido que el Shell invoque servicios de dominio directamente para comandos contextuales. El flujo obligatorio es:
 
 ```
 Shell → ICommandRegistry → ICommandContext.ActiveRoute → ICommandRoute.ExecuteAsync() → Servicio
 ```
+
+**Regla:** Prohibido crear comandos contextuales para operaciones globales. Si una operación no depende del documento activo, debe llamarse directamente al servicio correspondiente.
 
 **Ejemplo correcto (Save contextual):**
 ```csharp
@@ -161,6 +196,8 @@ private async Task SaveAsync()
     _logger.LogInformation("[UI] Command: Save (contextual)");
     await _commandRegistry.ExecuteAsync("Save");
 }
+
+private bool CanSave() => _commandRegistry.CanExecute("Save");
 ```
 
 **Ejemplo incorrecto (Shell acoplado al editor):**
@@ -184,6 +221,8 @@ private async Task OpenProjectAsync()
 ```
 
 Ver `especificaciones/command-routing.md` para detalles de implementación.
+Ver `especificaciones/command-routing-alignment.md` para la tabla completa de clasificación.
+Ver `ADR-004` para la decisión arquitectónica sobre IApp y bootstrap.
 
 ### Separación de Contexto vs Servicio
 

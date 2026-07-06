@@ -2,20 +2,20 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Msi.TemplateCodeGenerator.Interfaces;
 using Msi.TemplateCodeGenerator.UI.Views.Shell;
 using Msi.TemplateCodeGenerator.UI.Views.Shell.ViewModels;
-using Serilog;
 
 namespace Msi.TemplateCodeGenerator;
 
-public partial class App : Application
+public partial class App : Application, IApp
 {
-    // Guardamos el Host para tenerlo disponible durante el ciclo de vida de la aplicación
-    private IHost _host = null!;
+    /// <summary>
+    /// Proveedor de servicios global. Se asigna en Program.Main antes de lanzar Avalonia.
+    /// </summary>
+    public static IServiceProvider? Services { get; internal set; }
 
     public override void Initialize()
     {
@@ -27,89 +27,57 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        // Host típico de .Net. Ahora que Avalonia ya se ha inicializado podemos hacer un HostApplication clásico
-        //--------------------------------------------------------------------------------------------------------
-
-        // Configurar y Construir el Host de la aplicación
-        HostApplicationBuilder builder = Host.CreateApplicationBuilder();
-        InitializeConfiguration(builder);
-        InitializeLogging(builder);
-        InitializeServices(builder);
-        _host = builder.Build();
-        _host.Start();
-
-        // Mostrar el Banner de inicio
-        LogStartupBanner(_host.Services);
-
-
-        // Terminamos la inicializacion de Avalonia
-        //------------------------------------------
-        // En este caso sabemos que la ejecución es de escritorio clásico
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopApp)
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            Avalonia_CreateMainWindow(desktopApp);
+            Avalonia_CreateMainWindow(desktop);
         }
 
         base.OnFrameworkInitializationCompleted();
     }
 
-    private static void InitializeConfiguration(HostApplicationBuilder builder)
-    {
-        // Aseguramos que se cargue appsettings.json con recarga en caliente
-        builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-    }
-
-    private static void InitializeLogging(HostApplicationBuilder builder)
-    {
-        Log.Logger = new LoggerConfiguration()
-            .ReadFrom.Configuration(builder.Configuration)
-            .CreateLogger();
-
-        builder.Logging.ClearProviders();
-        builder.Logging.AddSerilog(dispose: true);
-    }
-
-    private static void InitializeServices(HostApplicationBuilder builder)
-    {
-        // Registrar servicios propios y de Avalonia
-        builder.Services.AddTemplateCodeGeneratorServices();
-    }
-
-    private static void LogStartupBanner(IServiceProvider services)
+    private void Avalonia_CreateMainWindow(IClassicDesktopStyleApplicationLifetime desktop)
     {
         ILogger<App>? logger = null;
         try
         {
+            IServiceProvider services = Services
+                ?? throw new InvalidOperationException("App.Services no ha sido inicializado.");
+
             logger = services.GetRequiredService<ILogger<App>>();
-            string version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.0";
-            
-            logger.LogInformation("""
-                          -----------------------
-                           TemplateCodeGenerator  v{Version}
-                          -----------------------
-                          Start application...
-                          """,
-                          version);
+            LogStartupBanner(logger);
+
+            MainWindow mainWindow = services.GetRequiredService<MainWindow>();
+            MainShellViewModel shellVm = services.GetRequiredService<MainShellViewModel>();
+
+            mainWindow.DataContext = shellVm;
+            desktop.MainWindow = mainWindow;
         }
         catch (Exception ex)
         {
-            logger?.LogError(ex, "Error al mostrar banner de arranque");
+            logger?.LogCritical(ex, "Error al inicializar la ventana principal");
+            throw;
         }
     }
 
-    private void Avalonia_CreateMainWindow(IClassicDesktopStyleApplicationLifetime desktopApp)
+    private static void LogStartupBanner(ILogger<App> logger)
     {
-        MainWindow mainWindow = _host.Services.GetRequiredService<MainWindow>();
-        MainShellViewModel mainShellViewModel = _host.Services.GetRequiredService<MainShellViewModel>();
+        string version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.0";
 
-        mainWindow.DataContext = mainShellViewModel;
-        desktopApp.MainWindow = mainWindow;
+        logger.LogInformation("""
+                      -----------------------
+                       TemplateCodeGenerator  v{Version}
+                      -----------------------
+                      Start application...
+                      """,
+                      version);
+    }
 
-        // Manejar el cierre de la aplicación para detener el Host
-        desktopApp.Exit += (sender, args) =>
+    /// <inheritdoc/>
+    public void Shutdown()
+    {
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            _host.StopAsync().Wait();
-            _host.Dispose();
-        };
+            desktop.Shutdown();
+        }
     }
 }

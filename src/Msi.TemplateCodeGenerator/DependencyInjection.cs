@@ -1,9 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using Msi.TemplateCodeGenerator.Interfaces;
+using Msi.TemplateCodeGenerator.Services;
 using Msi.TemplateCodeGenerator.Services.Project;
 using Msi.TemplateCodeGenerator.Services.Templates;
-using Msi.TemplateCodeGenerator.Services;
 using Msi.TemplateCodeGenerator.UI.Services.Commands;
 using Msi.TemplateCodeGenerator.UI.Services.Dialogs;
 using Msi.TemplateCodeGenerator.UI.Services.Navigation;
@@ -31,6 +31,9 @@ public static class DependencyInjection
         //----------------------
         // Registrar los servicios específicos de la UI
         services.AddSingleton<MainWindow>();
+
+        // Registrar IApp como lazy factory (se resuelve cuando Application.Current está disponible)
+        services.AddSingleton<IApp>(_ => (IApp)Avalonia.Application.Current!);
 
         // Registrar los ViewModels de las "páginas".
         services.AddSingleton<MainShellViewModel>();
@@ -65,6 +68,7 @@ public static class DependencyInjection
         services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton<IFileDialogService, FileDialogService>();
         services.AddSingleton<ITemplatesService, TemplatesService>();
+        services.AddSingleton<IMetadataService, MetadataService>();
 
         // Registrar CommandRegistry
         services.AddSingleton<ICommandRegistry, CommandRegistry>();
