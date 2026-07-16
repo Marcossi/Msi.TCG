@@ -12,13 +12,12 @@ namespace Msi.TemplateCodeGenerator.UI.Views.MetadataEditor.ViewModels;
 /// y delega el procesamiento de metadata en IMetadataService.
 /// </summary>
 internal sealed partial class MetadataEditorShellViewModel(
-    IFileService fileService,
+    IFileSystem fileSystem,
     IDialogService dialogService,
     IMetadataService metadataService,
     ILogger<MetadataEditorShellViewModel> logger)
-    : BaseTextEditorViewModel(fileService, dialogService, logger)
+    : BaseTextEditorViewModel(fileSystem, dialogService, logger)
 {
-    private readonly ILogger<MetadataEditorShellViewModel> _logger = logger;
     private readonly IMetadataService _metadataService = metadataService;
 
     [ObservableProperty]

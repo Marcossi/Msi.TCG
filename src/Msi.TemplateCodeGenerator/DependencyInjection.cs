@@ -59,14 +59,27 @@ public static class DependencyInjection
         services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
 
         // Registrar servicios de proyecto
-        services.AddSingleton<IProjectContext, ProjectContext>();
+        services.AddSingleton<ProjectContext>();
+        services.AddSingleton<IProjectContext>(sp => sp.GetRequiredService<ProjectContext>());
+        services.AddSingleton<IProjectContextMutator>(sp => sp.GetRequiredService<ProjectContext>());
         services.AddSingleton<IProjectSerializer, JsonProjectSerializer>();
+        services.AddSingleton<IElementCatalog, ElementCatalog>();
         services.AddSingleton<IProjectService, ProjectService>();
+        services.AddSingleton<IProjectTreeBuilder, ProjectTreeBuilder>();
 
         // Registrar otros servicios
-        services.AddSingleton<IFileService, FileService>();
+        services.AddSingleton<IFileSystem, FileSystem>();
+        services.AddSingleton<IFileWatcherService, FileWatcherService>();
         services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton<IFileDialogService, FileDialogService>();
+        services.AddSingleton<IProjectExplorerStateService, ProjectExplorerStateService>();
+        services.AddSingleton<IProjectExplorerStateManager, ProjectExplorerStateManager>();
+        services.AddSingleton<IProjectScriptFinder, ProjectScriptFinder>();
+        services.AddSingleton<IProjectFileOperations, ProjectFileOperations>();
+        services.AddSingleton<IInlineEditingService, InlineEditingService>();
+        services.AddSingleton<IContextMenuService, ContextMenuService>();
+        services.AddSingleton<IScriptOutputWriter, ScriptOutputWriter>();
+        services.AddSingleton<IScriptEngine, ScriptEngine>();
         services.AddSingleton<ITemplatesService, TemplatesService>();
         services.AddSingleton<IMetadataService, MetadataService>();
 

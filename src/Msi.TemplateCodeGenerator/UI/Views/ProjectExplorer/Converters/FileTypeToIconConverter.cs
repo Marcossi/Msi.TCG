@@ -17,6 +17,7 @@ internal sealed class FileTypeToIconConverter : IValueConverter
             FileType.Project   => "\uEB3B",   // GenericApp
             FileType.Directory => "\uE8B7",   // Folder
             FileType.Script    => "\uE89A",   // TwoPage
+            FileType.Data      => "\uE8D6",   // Database
             FileType.Metadata  => "\uE8D6",   // Database
             FileType.Other     => "\uE8A5",   // Document
             _                  => string.Empty

@@ -21,6 +21,11 @@
                         ToolTip.Tip="Guardar (Ctrl+S)"
                         Padding="8,4"
                         MinWidth="80"/>
+                <Button Content="Generate" 
+                        Command="{Binding GenerateCommand}"
+                        ToolTip.Tip="Ejecutar script y escribir outputs a disco"
+                        Padding="8,4"
+                        MinWidth="80"/>
             </StackPanel>
         </Border>
 
@@ -40,20 +45,36 @@
             
             <!-- Splitter -->
             <GridSplitter Grid.Column="1" 
-                          ResizeDirection="Columns" 
-                          Background="#DDDDDD" />
+                           ResizeDirection="Columns" 
+                           Background="#DDDDDD" />
 
             <!-- Preview (Derecha) -->
-            <TextBox Grid.Column="2"
-                     Text="{Binding PreviewContent}"
-                     IsReadOnly="True"
-                     AcceptsReturn="True"
-                     FontFamily="Consolas, Monospace, Courier New"
-                     VerticalContentAlignment="Top"
-                     PlaceholderText="Vista previa en tiempo real..."
-                     BorderThickness="1"
-                     BorderBrush="#CCCCCC"
-                     CornerRadius="0"/>
+            <Grid Grid.Column="2" RowDefinitions="*,Auto">
+                <TextBox Grid.Row="0"
+                         Text="{Binding PreviewContent}"
+                         IsReadOnly="True"
+                         AcceptsReturn="True"
+                         FontFamily="Consolas, Monospace, Courier New"
+                         VerticalContentAlignment="Top"
+                         PlaceholderText="Vista previa en tiempo real..."
+                         BorderThickness="1"
+                         BorderBrush="#CCCCCC"
+                         CornerRadius="0"/>
+
+                <!-- Error + Status panel (dockado abajo) -->
+                <Border Grid.Row="1" 
+                        Background="#FFE0E0" 
+                        IsVisible="{Binding PreviewError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                        Padding="8">
+                    <TextBox Text="{Binding PreviewError}" 
+                               IsReadOnly="True"
+                               Foreground="Red" 
+                               Background="Transparent"
+                               BorderThickness="0"
+                               TextWrapping="Wrap"
+                               AcceptsReturn="True"/>
+                </Border>
+            </Grid>
         </Grid>
     </DockPanel>
 </UserControl>

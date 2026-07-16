@@ -28,6 +28,10 @@
                 <Separator />
                 <MenuItem Header="_Salir" Command="{Binding ExitCommand}"/>
             </MenuItem>
+            <MenuItem Header="_Generate">
+                <MenuItem Header="Generate _Current" Command="{Binding GenerateCurrentCommand}"/>
+                <MenuItem Header="Generate _All" Command="{Binding GenerateAllCommand}"/>
+            </MenuItem>
         </Menu>
 
         <!-- Layout de paneles gestionado por Dock.Avalonia -->

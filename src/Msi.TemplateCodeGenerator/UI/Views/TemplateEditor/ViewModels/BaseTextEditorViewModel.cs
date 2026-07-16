@@ -14,12 +14,12 @@ namespace Msi.TemplateCodeGenerator.UI.Views.TemplateEditor.ViewModels;
 /// Implementa ICloseAware para controlar el cierre seguro con confirmación si hay cambios pendientes.
 /// </summary>
 internal abstract partial class BaseTextEditorViewModel(
-    IFileService fileService,
+    IFileSystem fileSystem,
     IDialogService dialogService,
     ILogger<BaseTextEditorViewModel> logger)
     : BaseViewModel, ICloseAware, ICommandRoute
 {
-    private readonly ILogger<BaseTextEditorViewModel> _logger = logger;
+    protected readonly ILogger<BaseTextEditorViewModel> _logger = logger;
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(TabTitle))]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
@@ -76,7 +76,7 @@ internal abstract partial class BaseTextEditorViewModel(
         try
         {
             FilePath = filePath;
-            Content = await fileService.ReadTextAsync(filePath);
+            Content = await fileSystem.ReadTextAsync(filePath);
             IsDirty = false;
             _logger.LogDebug("Fichero cargado: '{FilePath}' ({ContentLen} chars)", filePath, Content.Length);
         }
@@ -96,7 +96,7 @@ internal abstract partial class BaseTextEditorViewModel(
         try
         {
             _logger.LogInformation("[UI] Editor: Guardando '{FilePath}'", FilePath);
-            await fileService.WriteTextAsync(FilePath, Content);
+            await fileSystem.WriteTextAsync(FilePath, Content);
             MarkAsSaved();
             _logger.LogInformation("[UI] Editor: Fichero guardado '{FilePath}'", FilePath);
         }
@@ -150,19 +150,20 @@ internal abstract partial class BaseTextEditorViewModel(
             await SaveCommand.ExecuteAsync(null);
             return !IsDirty;  // true si se limpió IsDirty tras guardar
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Error inesperado en TrySaveAsync para '{FilePath}'", FilePath);
             return false;
         }
     }
 
-    public bool CanExecute(string commandName) => commandName switch
+    public virtual bool CanExecute(string commandName) => commandName switch
     {
         "Save" => CanSave(),
         _ => false
     };
 
-    public async Task ExecuteAsync(string commandName)
+    public virtual async Task ExecuteAsync(string commandName)
     {
         switch (commandName)
         {

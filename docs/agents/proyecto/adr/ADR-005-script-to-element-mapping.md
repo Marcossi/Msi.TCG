@@ -191,6 +191,28 @@ public static class ScriptHelpers
   - Añadir lista de scripts
   - Añadir lista de datos
 
+### 8. Convención de nombres en scripts
+
+Los scripts Scriban deben usar **PascalCase** para invocar helpers C#, manteniendo consistencia con las convenciones de .NET.
+
+**Decisión:**
+- Helpers C# se exponen con sus nombres originales (PascalCase)
+- `GetAllElements()` en lugar de `get_all_elements()`
+- `PascalCase()` en lugar de `pascal_case()`
+- `GetElementsByType()` en lugar de `get_elements_by_type()`
+
+**Razón:**
+- El proyecto está dirigido a desarrolladores .NET que usan PascalCase
+- El `MemberRenamer` en `ScriptEngine` preserva los nombres C# tal cual (`member => member.Name`)
+- Consistencia con el ecosistema .NET
+
+**Ejemplo correcto:**
+```scriban
+{{ for element in GetAllElements() }}
+  {{ element.Name | PascalCase }}
+{{ end }}
+```
+
 ## Alternativas consideradas
 
 ### A. Metadata declarativa (.scriban.json)

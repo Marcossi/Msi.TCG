@@ -1,0 +1,64 @@
+{
+  "fileFormatVersion": 1,
+  "project": {
+    "name": "NuevoProyecto",
+    "folderPath": "E:\\Dev\\Msi.TemplateCodeGenerator\\resources\\ProjectSample1",
+    "files": [
+      {
+        "name": "Model",
+        "relativePath": "Model",
+        "type": 4
+      },
+      {
+        "name": "Templates",
+        "relativePath": "Templates",
+        "type": 4
+      },
+      {
+        "name": "TestProject.scribanproj",
+        "relativePath": "TestProject.scribanproj",
+        "type": 5
+      },
+      {
+        "name": "Elements",
+        "relativePath": "Model\\Elements",
+        "type": 4
+      },
+      {
+        "name": "Workflow.json",
+        "relativePath": "Model\\Workflow.json",
+        "type": 2
+      },
+      {
+        "name": "Sample1.scriban",
+        "relativePath": "Templates\\Sample1.scriban",
+        "type": 1
+      },
+      {
+        "name": "Sample2.scriban",
+        "relativePath": "Templates\\Sample2.scriban",
+        "type": 1
+      },
+      {
+        "name": "Sample3.scriban",
+        "relativePath": "Templates\\Sample3.scriban",
+        "type": 1
+      },
+      {
+        "name": "CustomerQuery.json",
+        "relativePath": "Model\\Elements\\CustomerQuery.json",
+        "type": 2
+      },
+      {
+        "name": "MainMenu.json",
+        "relativePath": "Model\\Elements\\MainMenu.json",
+        "type": 2
+      },
+      {
+        "name": "_defaults.json",
+        "relativePath": "Model\\Elements\\_defaults.json",
+        "type": 2
+      }
+    ]
+  }
+}

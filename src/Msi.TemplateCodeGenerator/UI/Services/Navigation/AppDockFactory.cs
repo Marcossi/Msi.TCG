@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Msi.TemplateCodeGenerator.Constants;
 using Msi.TemplateCodeGenerator.UI.Views.ProjectExplorer.ViewModels;
-using Msi.TemplateCodeGenerator.UI.Views.Settings.ViewModels;
 using Msi.TemplateCodeGenerator.UI.Views.TemplateEditor.ViewModels;
 
 namespace Msi.TemplateCodeGenerator.UI.Services.Navigation;
@@ -34,9 +33,8 @@ internal sealed class AppDockFactory(
         // Resolver ViewModels bajo demanda (lazy resolution)
         ProjectExplorerShellViewModel projectExplorer = _serviceProvider.GetRequiredService<ProjectExplorerShellViewModel>();
         TemplateEditorShellViewModel templateEditor = _serviceProvider.GetRequiredService<TemplateEditorShellViewModel>();
-        SettingsShellViewModel settings = _serviceProvider.GetRequiredService<SettingsShellViewModel>();
 
-        _logger.LogDebug("ViewModels resueltos: ProjectExplorer, TemplateEditor, Settings");
+        _logger.LogDebug("ViewModels resueltos: ProjectExplorer, TemplateEditor");
 
         // Estructura del layout:
         // RootDock

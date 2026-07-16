@@ -1,6 +1,6 @@
 namespace Msi.TemplateCodeGenerator.Services.Templates;
 
-internal sealed class TemplateResult
+public sealed class TemplateResult
 {
     public bool IsSuccess { get; set; }
     public string Result { get; set; } = string.Empty;

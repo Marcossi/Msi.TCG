@@ -12,6 +12,7 @@
     <UserControl.Resources>
         <converters:FileTypeToIconConverter x:Key="FileTypeToIcon" />
         <converters:FileTypeToForegroundConverter x:Key="FileTypeToForeground" />
+        <converters:BoolToInverseConverter x:Key="BoolToInverse" />
         <FontFamily x:Key="SegoeIconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
     </UserControl.Resources>
     <DockPanel>
@@ -37,20 +38,43 @@
 
         <!-- Árbol de ficheros del proyecto -->
         <TreeView x:Name="FileTree" ItemsSource="{Binding FileTree}" SelectedItem="{Binding SelectedFileEntry}"
-                  DoubleTapped="OnTreeViewDoubleTapped">
+                  DoubleTapped="OnTreeViewDoubleTapped"
+                  PointerMoved="OnTreeViewPointerMoved"
+                  PointerReleased="OnTreeViewPointerReleased"
+                  DragDrop.AllowDrop="True"
+                  DragDrop.DragOver="OnTreeViewDragOver"
+                  DragDrop.Drop="OnTreeViewDrop">
+            <TreeView.KeyBindings>
+                <KeyBinding Gesture="F2" Command="{Binding RenameCommand}" CommandParameter="{Binding SelectedItem, ElementName=FileTree}" />
+                <KeyBinding Gesture="Delete" Command="{Binding DeleteCommand}" CommandParameter="{Binding SelectedItem, ElementName=FileTree}" />
+            </TreeView.KeyBindings>
             <TreeView.Styles>
                 <Style Selector="TreeViewItem">
-                    <Setter Property="IsExpanded" Value="{Binding IsExpanded}" />
+                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                    <Setter Property="DragDrop.AllowDrop" Value="True" />
                 </Style>
             </TreeView.Styles>
             <TreeView.ItemTemplate>
                 <TreeDataTemplate ItemsSource="{Binding Children}">
-                    <StackPanel Orientation="Horizontal" Spacing="4">
-                        <TextBlock Text="{Binding Type, Converter={StaticResource FileTypeToIcon}}"
-                                   Foreground="{Binding Type, Converter={StaticResource FileTypeToForeground}}"
-                                   FontFamily="{StaticResource SegoeIconFont}" />
-                        <TextBlock Text="{Binding Name}" />
-                    </StackPanel>
+                    <Panel>
+                        <!-- Modo visualización -->
+                        <StackPanel Orientation="Horizontal" Spacing="4"
+                                    IsVisible="{Binding IsEditing, Converter={StaticResource BoolToInverse}}">
+                            <TextBlock Text="{Binding Type, Converter={StaticResource FileTypeToIcon}}"
+                                       Foreground="{Binding Type, Converter={StaticResource FileTypeToForeground}}"
+                                       FontFamily="{StaticResource SegoeIconFont}" />
+                            <TextBlock Text="{Binding Name}" />
+                            <TextBlock Text="❌"
+                                       Foreground="Red"
+                                       IsVisible="{Binding HasError}"
+                                        ToolTip.Tip="{Binding ErrorMessage}" />
+                         </StackPanel>
+                         <!-- Modo edición inline -->
+                         <TextBox Text="{Binding EditingName, Mode=TwoWay}"
+                                  IsVisible="{Binding IsEditing}"
+                                  KeyDown="OnEditingTextBoxKeyDown"
+                                  LostFocus="OnEditingTextBoxLostFocus" />
+                    </Panel>
                 </TreeDataTemplate>
             </TreeView.ItemTemplate>
         </TreeView>

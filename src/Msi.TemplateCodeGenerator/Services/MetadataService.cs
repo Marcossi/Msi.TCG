@@ -11,10 +11,10 @@ namespace Msi.TemplateCodeGenerator.Services;
 /// Encargado de parsear, cargar defaults y aplicar merge.
 /// </summary>
 internal sealed class MetadataService(
-    IFileService fileService,
+    IFileSystem fileSystem,
     ILogger<MetadataService> logger) : IMetadataService
 {
-    private readonly IFileService _fileService = fileService;
+    private readonly IFileSystem _fileSystem = fileSystem;
     private readonly ILogger<MetadataService> _logger = logger;
 
     /// <inheritdoc/>
@@ -36,9 +36,9 @@ internal sealed class MetadataService(
                 {
                     string defaultsPath = Path.Combine(directory, defaultsFileName);
 
-                    if (File.Exists(defaultsPath))
+                    if (await _fileSystem.FileExistsAsync(defaultsPath))
                     {
-                        string defaultsJson = await _fileService.ReadTextAsync(defaultsPath);
+                        string defaultsJson = await _fileSystem.ReadTextAsync(defaultsPath);
                         MetadataFile defaultsFile = JsonSerializer.Deserialize<MetadataFile>(defaultsJson, new JsonSerializerOptions
                         {
                             PropertyNameCaseInsensitive = true

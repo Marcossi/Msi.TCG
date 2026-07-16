@@ -12,13 +12,23 @@ namespace Msi.TemplateCodeGenerator.Services.Project;
 /// </summary>
 internal sealed partial class ProjectService(
     IProjectContext context,
+    IProjectContextMutator mutator,
     IProjectSerializer serializer,
+    IElementCatalog elementCatalog,
+    IFileWatcherService fileWatcher,
+    IFileSystem fileSystem,
+    IProjectExplorerStateService projectExplorerStateService,
     IMessenger messenger,
     ILogger<ProjectService> logger) : IProjectService
 {
     private readonly ILogger<ProjectService> _logger = logger;
-    private readonly ProjectContext _context = (ProjectContext)context;
+    private readonly IProjectContext _context = context;
+    private readonly IProjectContextMutator _mutator = mutator;
     private readonly IProjectSerializer _serializer = serializer;
+    private readonly IElementCatalog _elementCatalog = elementCatalog;
+    private readonly IFileWatcherService _fileWatcher = fileWatcher;
+    private readonly IFileSystem _fileSystem = fileSystem;
+    private readonly IProjectExplorerStateService _projectExplorerStateService = projectExplorerStateService;
     private readonly IMessenger _messenger = messenger;
 
     /// <summary>
@@ -38,10 +48,16 @@ internal sealed partial class ProjectService(
 
         project.FolderPath = Path.GetDirectoryName(projectPath) ?? string.Empty;
 
-        // TODO: Iniciar FileWatcher
+        _mutator.SetProject(project, projectPath);
 
-        _context.CurrentProject = project;
-        _context.CurrentProjectPath = projectPath;
+        // Recargar catálogo de Elements
+        await _elementCatalog.ReloadAsync();
+
+        // Crear estructura de carpetas del editor
+        await _projectExplorerStateService.EnsureEditorDirectoriesExistAsync(projectPath);
+
+        // Iniciar FileWatcher
+        _fileWatcher.StartWatching(project.FolderPath);
 
         // Notificar a toda la aplicación
         _messenger.Send(new ProjectOpenedMessage(projectPath));
@@ -51,15 +67,15 @@ internal sealed partial class ProjectService(
 
     /// <summary>
     /// Cierra el proyecto activo.
-    /// TODO: detener FileWatcher, limpiar recursos.
     /// </summary>
     public Task CloseProjectAsync()
     {
         _logger.LogInformation("Cerrando proyecto activo");
 
-        // TODO: Detener FileWatcher, limpiar recursos (async)
-        _context.CurrentProject = null;
-        _context.CurrentProjectPath = null;
+        // Detener FileWatcher
+        _fileWatcher.StopWatching();
+
+        _mutator.ClearProject();
 
         // Notificar a toda la aplicación
         _messenger.Send(new ProjectClosedMessage());
@@ -115,7 +131,7 @@ internal sealed partial class ProjectService(
         await _serializer.SaveAsync(_context.CurrentProject!, newProjectPath);
 
         // Actualizar la ruta actual después de guardar
-        _context.CurrentProjectPath = newProjectPath;
+        _mutator.UpdateProjectPath(newProjectPath);
 
         // Notificar a toda la aplicación
         _messenger.Send(new ProjectSavedMessage(newProjectPath));
@@ -153,8 +169,7 @@ internal sealed partial class ProjectService(
         // TODO: Crear estructura de carpetas adicionales si es necesario
 
         // Actualizar el contexto
-        _context.CurrentProject = project;
-        _context.CurrentProjectPath = projectPath;
+        _mutator.SetProject(project, projectPath);
 
         // Notificar a toda la aplicación
         _messenger.Send(new ProjectOpenedMessage(projectPath));

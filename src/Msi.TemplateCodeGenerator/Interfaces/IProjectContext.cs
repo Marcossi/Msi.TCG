@@ -4,7 +4,7 @@ namespace Msi.TemplateCodeGenerator.Interfaces;
 
 /// <summary>
 /// Expone el estado del proyecto activo en la aplicación.
-/// Este servicio solo contiene datos/estado, sin lógica de operaciones.
+/// Este servicio solo contiene datos/estado de solo lectura, sin lógica de operaciones.
 /// </summary>
 public interface IProjectContext
 {

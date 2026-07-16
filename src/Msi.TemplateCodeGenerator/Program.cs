@@ -24,9 +24,10 @@ internal sealed class Program
             {
                 File.Delete(lastLogPath);
             }
-            catch
+            catch (Exception ex)
             {
                 // Si no se puede borrar (está bloqueado por otra instancia), continuar
+                Console.Error.WriteLine($"Warning: Could not delete last.log: {ex.Message}");
             }
         }
 

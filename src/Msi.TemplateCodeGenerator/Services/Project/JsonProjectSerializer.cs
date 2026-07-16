@@ -11,9 +11,10 @@ namespace Msi.TemplateCodeGenerator.Services.Project;
 /// NOTA: Los comentarios se leen pero NO se preservan al guardar.
 /// TODO: Evaluar migración a JSON5 si se requiere preservar comentarios.
 /// </summary>
-internal sealed class JsonProjectSerializer(ILogger<JsonProjectSerializer> logger) : IProjectSerializer
+internal sealed class JsonProjectSerializer(ILogger<JsonProjectSerializer> logger, IFileSystem fileSystem) : IProjectSerializer
 {
     private readonly ILogger<JsonProjectSerializer> _logger = logger;
+    private readonly IFileSystem _fileSystem = fileSystem;
     private static readonly JsonSerializerOptions _options = new()
     {
         WriteIndented = true,
@@ -54,7 +55,7 @@ internal sealed class JsonProjectSerializer(ILogger<JsonProjectSerializer> logge
         string json = JsonSerializer.Serialize(dto, _options);
 
         // Escribir a disco
-        await File.WriteAllTextAsync(filePath, json);
+        await _fileSystem.WriteTextAsync(filePath, json);
 
         _logger.LogInformation("Proyecto guardado en '{FilePath}'", filePath);
     }
@@ -67,13 +68,13 @@ internal sealed class JsonProjectSerializer(ILogger<JsonProjectSerializer> logge
         if (string.IsNullOrWhiteSpace(filePath))
             throw new ArgumentException("File path cannot be empty.", nameof(filePath));
 
-        if (!File.Exists(filePath))
+        if (!await _fileSystem.FileExistsAsync(filePath))
             throw new FileNotFoundException("Project file not found.", filePath);
 
         _logger.LogInformation("Cargando proyecto desde '{FilePath}'", filePath);
 
         // Leer archivo JSON
-        string json = await File.ReadAllTextAsync(filePath);
+        string json = await _fileSystem.ReadTextAsync(filePath);
 
         // Deserializar DTO
         ProjectFileDto? dto = JsonSerializer.Deserialize<ProjectFileDto>(json, _options);

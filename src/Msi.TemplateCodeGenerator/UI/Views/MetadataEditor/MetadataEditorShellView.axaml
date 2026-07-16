@@ -44,9 +44,10 @@
                           Background="#DDDDDD" />
 
             <!-- Preview (Derecha) -->
-            <Panel Grid.Column="2">
+            <Grid Grid.Column="2" RowDefinitions="*,Auto">
                 <!-- Preview normal -->
-                <TextBox Text="{Binding PreviewContent}"
+                <TextBox Grid.Row="0"
+                         Text="{Binding PreviewContent}"
                          IsReadOnly="True"
                          AcceptsReturn="True"
                          FontFamily="Consolas, Monospace, Courier New"
@@ -57,13 +58,30 @@
                          CornerRadius="0"
                          IsVisible="{Binding !HasError}"/>
                 
-                <!-- Preview con error -->
-                <TextBlock Text="{Binding PreviewContent}"
+                <!-- Preview con error (ocupa todo el espacio cuando hay error) -->
+                <TextBox Grid.Row="0"
+                           Text="{Binding PreviewContent}"
+                           IsReadOnly="True"
+                           AcceptsReturn="True"
                            Foreground="Red"
+                           Background="Transparent"
+                           BorderThickness="0"
                            TextWrapping="Wrap"
+                           FontFamily="Consolas, Monospace, Courier New"
+                           VerticalContentAlignment="Top"
                            Margin="8"
                            IsVisible="{Binding HasError}"/>
-            </Panel>
+                
+                <!-- Error panel (dockado abajo) -->
+                <Border Grid.Row="1" 
+                        Background="#FFE0E0" 
+                        IsVisible="{Binding HasError}"
+                        Padding="8">
+                    <TextBlock Text="Error de sintaxis JSON" 
+                               Foreground="Red" 
+                               FontWeight="SemiBold"/>
+                </Border>
+            </Grid>
         </Grid>
     </DockPanel>
 </UserControl>

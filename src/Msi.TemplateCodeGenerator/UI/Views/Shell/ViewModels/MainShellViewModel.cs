@@ -1,9 +1,12 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Dock.Model.Controls;
 using Microsoft.Extensions.Logging;
 using Msi.TemplateCodeGenerator.Constants;
 using Msi.TemplateCodeGenerator.Interfaces;
+using Msi.TemplateCodeGenerator.Messages;
+using Msi.TemplateCodeGenerator.Models;
 using Msi.TemplateCodeGenerator.UI.Services.Commands;
 using Msi.TemplateCodeGenerator.UI.Shared;
 
@@ -14,14 +17,19 @@ namespace Msi.TemplateCodeGenerator.UI.Views.Shell.ViewModels;
 /// El layout de paneles se obtiene de INavigationService.
 /// Las operaciones de proyecto se delegan en IProjectService.
 /// </summary>
-internal partial class MainShellViewModel : BaseViewModel
+internal partial class MainShellViewModel : BaseViewModel, IDisposable
 {
     private readonly IProjectService _projectService;
+    private readonly IProjectContext _projectContext;
     private readonly IFileDialogService _fileDialogService;
     private readonly ICommandRegistry _commandRegistry;
+    private readonly ITemplatesService _templatesService;
+    private readonly IDialogService _dialogService;
     private readonly INavigationService _navigationService;
     private readonly IApp _app;
+    private readonly IMessenger _messenger;
     private readonly ILogger<MainShellViewModel> _logger;
+    private bool _disposed;
 
     ///      XAML                    ViewModel
     ///──────────────────────────────────────────────────────────
@@ -40,18 +48,31 @@ internal partial class MainShellViewModel : BaseViewModel
     public MainShellViewModel(
         INavigationService navigationService,
         IProjectService projectService,
+        IProjectContext projectContext,
         IFileDialogService fileDialogService,
         ICommandRegistry commandRegistry,
+        ITemplatesService templatesService,
+        IDialogService dialogService,
         IApp app,
+        IMessenger messenger,
         ILogger<MainShellViewModel> logger)
     {
         _navigationService = navigationService;
         _projectService = projectService;
+        _projectContext = projectContext;
         _fileDialogService = fileDialogService;
         _commandRegistry = commandRegistry;
+        _templatesService = templatesService;
+        _dialogService = dialogService;
         _app = app;
+        _messenger = messenger;
         _logger = logger;
         _layout = navigationService.GetLayout();
+
+        _messenger.Register<ProjectOpenedMessage>(this, (r, m) =>
+            ((MainShellViewModel)r).NotifyCanExecuteChangedForProjectCommands());
+        _messenger.Register<ProjectClosedMessage>(this, (r, m) =>
+            ((MainShellViewModel)r).NotifyCanExecuteChangedForProjectCommands());
     }
 
     /// <summary>
@@ -73,7 +94,7 @@ internal partial class MainShellViewModel : BaseViewModel
             if (filePath is null)
                 return;
 
-            string projectName = System.IO.Path.GetFileNameWithoutExtension(filePath);
+            string projectName = Path.GetFileNameWithoutExtension(filePath);
             await _projectService.CreateNewProjectAsync(filePath, projectName);
         }
         catch (Exception ex)
@@ -112,7 +133,7 @@ internal partial class MainShellViewModel : BaseViewModel
     /// <summary>
     /// Cierra el proyecto activo.
     /// </summary>
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanCloseProject))]
     private async Task CloseProjectAsync()
     {
         _logger.LogInformation("[UI] Command: CloseProject");
@@ -126,6 +147,8 @@ internal partial class MainShellViewModel : BaseViewModel
             StatusMessage = $"Error: {ex.Message}";
         }
     }
+
+    private bool CanCloseProject() => _projectContext.IsProjectOpen;
 
     /// <summary>
     /// Guarda el proyecto actual.
@@ -148,7 +171,7 @@ internal partial class MainShellViewModel : BaseViewModel
     /// <summary>
     /// Guarda el proyecto en una nueva ubicación.
     /// </summary>
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanSaveProjectAs))]
     private async Task SaveProjectAsAsync()
     {
         _logger.LogInformation("[UI] Command: SaveProjectAs");
@@ -171,6 +194,8 @@ internal partial class MainShellViewModel : BaseViewModel
             StatusMessage = $"Error: {ex.Message}";
         }
     }
+
+    private bool CanSaveProjectAs() => _projectContext.IsProjectOpen;
 
     /// <summary>
     /// Cierra la aplicación de forma controlada.
@@ -224,4 +249,92 @@ internal partial class MainShellViewModel : BaseViewModel
     }
 
     private bool CanSave() => _commandRegistry.CanExecute("Save");
+
+    /// <summary>
+    /// Ejecuta el script del editor activo.
+    /// Delega en ICommandRegistry para resolver el comando contextual.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanGenerateCurrent))]
+    private async Task GenerateCurrentAsync()
+    {
+        _logger.LogInformation("[UI] Command: GenerateCurrent (contextual)");
+        try
+        {
+            bool executed = await _commandRegistry.ExecuteAsync("Generate");
+            if (!executed)
+            {
+                _logger.LogDebug("No se pudo ejecutar Generate contextual (sin editor activo)");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[UI] Error executing GenerateCurrent (contextual)");
+            StatusMessage = $"Error: {ex.Message}";
+        }
+    }
+
+    private bool CanGenerateCurrent() => _commandRegistry.CanExecute("Generate");
+
+    /// <summary>
+    /// Ejecuta todos los scripts del proyecto abierto.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanGenerateAll))]
+    private async Task GenerateAllAsync()
+    {
+        _logger.LogInformation("[UI] Command: GenerateAll");
+        try
+        {
+            BatchExecutionResult result = await _templatesService.ExecuteAllScriptsAsync();
+
+            string message = $"Generated {result.SuccessCount} script(s)";
+            if (result.ErrorCount > 0)
+            {
+                message += $"\n\n{result.ErrorCount} script(s) failed:\n{string.Join("\n", result.Errors)}";
+            }
+
+            await _dialogService.ShowInfoAsync(message, "Generate All Complete");
+
+            _logger.LogInformation("GenerateAll completed: {Success} success, {Error} errors",
+                result.SuccessCount, result.ErrorCount);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[UI] Error executing GenerateAll");
+            StatusMessage = $"Error: {ex.Message}";
+        }
+    }
+
+    private bool CanGenerateAll() => _projectContext.IsProjectOpen;
+
+    /// <summary>
+    /// Notifica a la UI que el estado de CanExecute ha cambiado para los comandos
+    /// que dependen del estado del proyecto.
+    /// </summary>
+    private void NotifyCanExecuteChangedForProjectCommands()
+    {
+        CloseProjectCommand.NotifyCanExecuteChanged();
+        SaveProjectAsCommand.NotifyCanExecuteChanged();
+        GenerateAllCommand.NotifyCanExecuteChanged();
+    }
+
+    /// <summary>
+    /// Libera los recursos utilizados por el ViewModel.
+    /// </summary>
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
+
+        _messenger.UnregisterAll(this);
+        _logger.LogDebug("MainShellViewModel disposed");
+        _disposed = true;
+    }
+
+    /// <summary>
+    /// Destructor como respaldo por si Dispose no se invoca.
+    /// </summary>
+    ~MainShellViewModel()
+    {
+        Dispose();
+    }
 }

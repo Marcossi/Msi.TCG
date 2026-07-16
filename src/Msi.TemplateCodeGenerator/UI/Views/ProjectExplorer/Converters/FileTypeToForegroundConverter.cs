@@ -19,6 +19,7 @@ internal sealed class FileTypeToForegroundConverter : IValueConverter
             FileType.Project   => Brushes.CornflowerBlue,
             FileType.Directory => Brushes.DarkGoldenrod,
             FileType.Script    => Brushes.Green,
+            FileType.Data      => Brushes.DarkSlateBlue,
             FileType.Metadata  => Brushes.DarkSlateBlue,
             FileType.Other     => Brushes.Black,
             _                  => null

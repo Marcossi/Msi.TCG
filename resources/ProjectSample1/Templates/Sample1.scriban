@@ -1,0 +1,91 @@
+# Ejemplo de Plantilla Scriban
+
+Esta es una prueba de renderizado en tiempo real.
+
+## Total de Elementos:
+{{ GetAllElements() }}
+
+## Todos los Elementos:
+{{~ for element in GetAllElements() ~}}
+- Elemento: {{ element.Name }} (ID: {{ element.Id }}, Tipo: {{ element.Type }})
+  Propiedades ({{ element.Properties.size }}):
+  {{~ for prop in element.Properties ~}}
+    * {{ prop.Type }} {{ prop.Name }} = {{ prop.Value }}{{ if prop.IsRequired }} [requerido]{{ end }}
+  {{~ end ~}}
+{{~ end ~}}
+
+## Solo Workflows:
+{{~ for element in GetAllElements() ~}}
+  {{~ if element.Type == "Workflow" ~}}
+- Workflow: {{ element.Name }}
+    {{~ for prop in element.Properties ~}}
+      {{~ if prop.Type == "string" ~}}
+  {{ prop.Name }}: {{ prop.Value }}
+      {{~ else if prop.Type == "int" ~}}
+  {{ prop.Name }}: {{ prop.Value }}
+      {{~ else if prop.Type == "bool" ~}}
+  {{ prop.Name }}: {{ prop.Value }}
+      {{~ end ~}}
+    {{~ end ~}}
+  {{~ end ~}}
+{{~ end ~}}
+
+## Bucle del 1 al 5:
+{{~ for i in 1..5 ~}}
+- Elemento número: {{ i }}
+{{~ end ~}}
+
+## Operaciones matemáticas:
+2 + 2 = {{ 2 + 2 }}
+
+## Funciones integradas:
+Texto en mayúsculas: {{ "hola mundo" | string.upcase }}
+PascalCase: {{ "order_processing" | PascalCase }}
+
+{{~ capture output ~}}
+# Ejemplo de Plantilla Scriban
+
+Esta es una prueba de renderizado en tiempo real.
+
+## Total de Elementos:
+{{ GetAllElements().size }}
+
+## Todos los Elementos:
+{{~ for element in GetAllElements() ~}}
+- Elemento: {{ element.Name }} (ID: {{ element.Id }}, Tipo: {{ element.Type }})
+  Propiedades ({{ element.Properties.size }}):
+  {{~ for prop in element.Properties ~}}
+    * {{ prop.Type }} {{ prop.Name }} = {{ prop.Value }}{{ if prop.IsRequired }} [requerido]{{ end }}
+  {{~ end ~}}
+{{~ end ~}}
+
+## Solo Workflows:
+{{~ for element in GetAllElements() ~}}
+  {{~ if element.Type == "Workflow" ~}}
+- Workflow: {{ element.Name }}
+    {{~ for prop in element.Properties ~}}
+      {{~ if prop.Type == "string" ~}}
+  {{ prop.Name }}: {{ prop.Value }}
+      {{~ else if prop.Type == "int" ~}}
+  {{ prop.Name }}: {{ prop.Value }}
+      {{~ else if prop.Type == "bool" ~}}
+  {{ prop.Name }}: {{ prop.Value }}
+      {{~ end ~}}
+    {{~ end ~}}
+  {{~ end ~}}
+{{~ end ~}}
+
+## Bucle del 1 al 5:
+{{~ for i in 1..5 ~}}
+- Elemento número: {{ i }}
+{{~ end ~}}
+
+## Operaciones matemáticas:
+2 + 2 = {{ 2 + 2 }}
+
+## Funciones integradas:
+Texto en mayúsculas: {{ "hola mundo" | string.upcase }}
+PascalCase: {{ "order_processing" | PascalCase }}
+{{~ end ~}}
+
+{{ write_to_file "output.md" output }}

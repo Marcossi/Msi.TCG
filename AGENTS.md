@@ -107,6 +107,8 @@ Cuando un usuario reporte un problema, indicar que reproduzca el error y consult
 │       ├── msi-guidelines-avalonia/
 │       ├── msi-guidelines-dotnet/
 │       └── libraries-doc/        ← Third-party library docs
+├── resources/                    ← Test projects for development/debugging
+│   └── ProjectSample1/           ← Sample project (see docs/agents/proyecto/resources.md)
 ├── src/
 │   └── Msi.TemplateCodeGenerator/
 │       ├── Program.cs, App.axaml(.cs), DependencyInjection.cs, ViewLocator.cs

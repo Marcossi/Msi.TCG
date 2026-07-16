@@ -12,47 +12,43 @@ internal sealed partial class ProjectService
     /// <summary>
     /// Refresca la lista de ficheros del proyecto activo escaneando la carpeta raíz en disco.
     /// </summary>
-    public Task RefreshFilesAsync()
+    public async Task RefreshFilesAsync()
     {
         if (!_context.IsProjectOpen)
             throw new InvalidOperationException("No project is currently open.");
 
         Models.Project project = _context.CurrentProject!;
 
-        if (string.IsNullOrWhiteSpace(project.FolderPath) || !Directory.Exists(project.FolderPath))
+        if (string.IsNullOrWhiteSpace(project.FolderPath) || !await _fileSystem.DirectoryExistsAsync(project.FolderPath))
             throw new InvalidOperationException("La carpeta del proyecto no existe o su ruta no está configurada.");
 
-        project.Files = new DirectoryInfo(project.FolderPath)
-            .EnumerateFileSystemInfos("*", SearchOption.AllDirectories)
+        IReadOnlyList<FileSystemEntryInfo> entries = await _fileSystem.GetFileSystemInfosAsync(
+            project.FolderPath, "*", SearchOption.AllDirectories);
+
+        project.Files = entries
             .Select(entry => new FileEntry
             {
                 Name = entry.Name,
-                RelativePath = Path.GetRelativePath(project.FolderPath, entry.FullName),
+                RelativePath = Path.GetRelativePath(project.FolderPath, entry.FullPath),
                 Type = ClassifyEntry(entry)
             })
             .ToList();
-
-        return Task.CompletedTask;
     }
 
-    /// <summary>
-    /// Clasifica una entrada del sistema de archivos en su <see cref="FileType"/> correspondiente.
-    /// </summary>
-    /// <param name="entry">Entrada del sistema de archivos a clasificar.</param>
-    /// <returns>El tipo de fichero determinado para la entrada.</returns>
-    private static FileType ClassifyEntry(FileSystemInfo entry)
+    private static FileType ClassifyEntry(FileSystemEntryInfo entry)
     {
-        if (entry is DirectoryInfo)
+        if (entry.IsDirectory)
             return FileType.Directory;
 
-        if (entry is FileInfo file)
-        {
-            if (file.Extension.Equals(ProjectConstants.TemplateFileExtension, StringComparison.OrdinalIgnoreCase))
-                return FileType.Script;
+        string extension = Path.GetExtension(entry.FullPath);
+        if (extension.Equals(ProjectConstants.TemplateFileExtension, StringComparison.OrdinalIgnoreCase))
+            return FileType.Script;
 
-            if (file.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase) &&
-                IsInMetadataFolder(file.FullName))
+        if (extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
+        {
+            if (IsInMetadataFolder(entry.FullPath))
                 return FileType.Metadata;
+            return FileType.Data;
         }
 
         return FileType.Other;

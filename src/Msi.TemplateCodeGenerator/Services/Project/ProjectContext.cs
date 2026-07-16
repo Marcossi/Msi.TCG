@@ -5,32 +5,44 @@ namespace Msi.TemplateCodeGenerator.Services.Project;
 /// <summary>
 /// Implementación del contexto del proyecto activo.
 /// Solo almacena el estado actual, sin lógica de operaciones.
+/// Implementa IProjectContext (read-only) e IProjectContextMutator (mutación interna).
 /// </summary>
-internal sealed class ProjectContext : IProjectContext
+internal sealed class ProjectContext : IProjectContext, IProjectContextMutator
 {
     private Models.Project? _currentProject;
     private string? _currentProjectPath;
 
-    /// <summary>
-    /// Proyecto activo, si existe.
-    /// </summary>
+    /// <inheritdoc/>
     public Models.Project? CurrentProject
     {
         get => _currentProject;
-        internal set => _currentProject = value;
+        private set => _currentProject = value;
     }
 
-    /// <summary>
-    /// Ruta del proyecto activo, si existe.
-    /// </summary>
+    /// <inheritdoc/>
     public string? CurrentProjectPath
     {
         get => _currentProjectPath;
-        internal set => _currentProjectPath = value;
+        private set => _currentProjectPath = value;
     }
 
-    /// <summary>
-    /// Indica si hay un proyecto abierto.
-    /// </summary>
-    public bool IsProjectOpen => CurrentProject != null;
+    /// <inheritdoc/>
+    void IProjectContextMutator.SetProject(Models.Project project, string projectPath)
+    {
+        CurrentProject = project;
+        CurrentProjectPath = projectPath;
+    }
+
+    /// <inheritdoc/>
+    void IProjectContextMutator.UpdateProjectPath(string newProjectPath)
+    {
+        CurrentProjectPath = newProjectPath;
+    }
+
+    /// <inheritdoc/>
+    void IProjectContextMutator.ClearProject()
+    {
+        CurrentProject = null;
+        CurrentProjectPath = null;
+    }
 }
